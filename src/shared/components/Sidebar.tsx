@@ -1,6 +1,7 @@
 import { Receipt, UtensilsCrossed, Refrigerator, LayoutGrid, Plus } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { ButtonGeneric } from './ButtonGeneric'
 
 interface NavItem {
   label: string
@@ -9,10 +10,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Orders',      icon: Receipt         , to:"/orders"},
-  { label: 'Products',    icon: UtensilsCrossed , to:"/products"},
-  { label: 'Ingredients', icon: Refrigerator    , to:"/ingredients"},
-  { label: 'Categories',  icon: LayoutGrid      , to:"/categories"},
+  { label: 'Orders',      icon: Receipt         , to: '/orders'      },
+  { label: 'Products',    icon: UtensilsCrossed , to: '/products'    },
+  { label: 'Ingredients', icon: Refrigerator    , to: '/ingredients' },
+  { label: 'Categories',  icon: LayoutGrid      , to: '/categories'  },
 ]
 
 function linkClasses(isActive: boolean): string {
@@ -24,10 +25,16 @@ function linkClasses(isActive: boolean): string {
 
 interface SidebarProps {
   activeItem?: string
-  onNewOrder?: () => void
 }
 
-export default function Sidebar({ activeItem = 'Orders', onNewOrder }: SidebarProps) {
+export default function Sidebar({ activeItem = '' }: SidebarProps) {
+  const navigate = useNavigate()
+
+  function handleNewProduct() {
+    // Navega a productos con un query param que la página detecta para abrir el modal de crear
+    navigate('/products?action=create')
+  }
+
   return (
     <aside className="w-sidebar flex flex-col h-screen fixed left-0 top-0 z-40 shadow-xl bg-rb-ink py-gutter">
 
@@ -55,16 +62,14 @@ export default function Sidebar({ activeItem = 'Orders', onNewOrder }: SidebarPr
         })}
       </nav>
 
-      {/* CTA New Order */}
+      {/* CTA — abrir modal de crear producto */}
       <div className="px-4 mt-auto">
-        <button
-          type="button"
-          onClick={onNewOrder}
-          className="w-full py-4 bg-primary text-on-primary text-label-caps rounded-md shadow-red-glow flex items-center justify-center gap-2 hover:bg-primary-container transition-colors"
-        >
-          <Plus size={18} aria-hidden="true" />
-          NEW ORDER
-        </button>
+        <ButtonGeneric
+          info={<><Plus size={18} aria-hidden="true" /> NUEVO PRODUCTO</>}
+          type="Primary"
+          onClick={handleNewProduct}
+          extraClass="w-full justify-center"
+        />
       </div>
 
     </aside>

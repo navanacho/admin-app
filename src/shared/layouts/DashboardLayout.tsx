@@ -3,9 +3,11 @@ import { useUIStore } from '@/shared/store/uiStore'
 import Sidebar from '@/shared/components/Sidebar'
 
 function activeItemFromPath(pathname: string): string {
+  if (pathname.startsWith('/orders'))      return 'Orders'
+  if (pathname.startsWith('/products'))    return 'Products'
   if (pathname.startsWith('/ingredients')) return 'Ingredients'
   if (pathname.startsWith('/categories'))  return 'Categories'
-  return 'Dashboard'
+  return ''
 }
 
 export function DashboardLayout() {
