@@ -19,7 +19,7 @@ export function Modal({ dialogRef, title, children }: ModalProps) {
   return (
     <dialog
       ref={dialogRef}
-      className="w-[480px] max-w-[90vw] rounded-lg bg-rb-ink shadow-ink p-0 border-0 m-auto"
+      className="w-120 max-w-[90vw] rounded-lg bg-rb-ink shadow-ink p-0 border-0 m-auto"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">

@@ -1,14 +1,45 @@
+// ─── Entidad principal ─────────────────────────────────────────────────────
+
 export interface Category {
-  id: number
-  name: string
-  description: string
-  createdAt: string
-  updatedAt: string
+  id:            number
+  parent_id:     number | null
+  name:          string
+  description:   string | null
+  order_display: number
+  image_url:     string | null
+  is_active:     boolean
+  created_at:    string
+  updated_at:    string
+  deleted_at:    string | null
 }
+
+// ─── Respuesta de lista ────────────────────────────────────────────────────
+
+export interface CategoryList {
+  data:  Category[]
+  total: number
+}
+
+// ─── DTOs ──────────────────────────────────────────────────────────────────
 
 export interface CreateCategoryDto {
-  name: string
-  description: string
+  parent_id:     number | null
+  name:          string
+  description:   string | null
+  order_display: number
+  image_url:     string | null
 }
 
-export type UpdateCategoryDto = Partial<CreateCategoryDto>
+export interface UpdateCategoryDto {
+  parent_id?:     number | null
+  name?:          string | null
+  description?:   string | null
+  order_display?: number | null
+  image_url?:     string | null
+}
+
+// ─── Estructura recursiva para el árbol ────────────────────────────────────
+
+export interface CategoryNode extends Category {
+  children: CategoryNode[]
+}
