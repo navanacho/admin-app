@@ -1,10 +1,14 @@
 import { apiClient } from '@/shared/lib/axios'
 import type { Ingredient, IngredientList, CreateIngredientDto, UpdateIngredientDto } from '../types'
 
-export async function getIngredients(offset: number, limit: number): Promise<IngredientList> {
-  const { data } = await apiClient.get<IngredientList>('/ingredients', {
-    params: { offset, limit },
-  })
+export async function getIngredients(
+  offset: number,
+  limit: number,
+  name?: string,
+): Promise<IngredientList> {
+  const params: Record<string, unknown> = { offset, limit }
+  if (name) params.name = name
+  const { data } = await apiClient.get<IngredientList>('/ingredients', { params })
   return data
 }
 

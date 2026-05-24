@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Plus, Pencil, PowerOff, Power, AlertTriangle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Plus, Pencil, PowerOff, Power, AlertTriangle, Search } from "lucide-react";
 
 import {
   useIngredients,
@@ -17,6 +17,9 @@ import { EntityTable }   from "@/shared/components/EntityTable";
 import { Modal }         from "@/shared/components/Modal";
 import { ConfirmModal }  from "@/shared/components/ConfirmModal";
 import { ButtonGeneric } from "@/shared/components/ButtonGeneric";
+import { SortableTh }    from "@/shared/components/SortableTh";
+import { useSortable }   from "@/shared/hooks/useSortable";
+import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
 import type { Ingredient, CreateIngredientDto } from "../types";
 
 const LIMIT = 10;
@@ -31,8 +34,19 @@ function currentPage(offset: number, limit: number): number {
 
 export function IngredientsPage() {
   const [offset, setOffset] = useState(0);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 300);
 
-  const { data, isLoading, error } = useIngredients(offset, LIMIT);
+  // Reset paginación cuando cambia el filtro
+  useEffect(() => {
+    setOffset(0);
+  }, [debouncedSearch]);
+
+  const { data, isLoading, error } = useIngredients(
+    offset,
+    LIMIT,
+    debouncedSearch || undefined,
+  );
   const { mutate: deactivateIngredient, isPending: isDeactivating } = useDeleteIngredient();
   const { mutate: activateIngredient,   isPending: isActivating   } = useActivateIngredient();
   const { mutate: createIngredient,     isPending: isCreating     } = useCreateIngredient();
@@ -40,6 +54,8 @@ export function IngredientsPage() {
 
   const ingredients = data?.data ?? [];
   const total       = data?.total ?? 0;
+
+  const { sorted: sortedIngredients, sortKey, direction, toggle } = useSortable<Ingredient>(ingredients);
 
   const allergenCount = ingredients.filter((i) => i.is_allergen).length;
   const activeCount   = ingredients.filter((i) => i.is_active).length;
@@ -122,6 +138,23 @@ export function IngredientsPage() {
         />
       </div>
 
+      <div className="flex items-center justify-end">
+        <div className="relative">
+          <Search
+            size={14}
+            aria-hidden="true"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar ingrediente…"
+            className="w-64 bg-surface-container-low border border-outline-variant rounded-sm pl-9 pr-3 py-2 text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
+          />
+        </div>
+      </div>
+
       <EntityTable
         title={`Inventario de Cocina — Página ${currentPage(offset, LIMIT)}`}
         isLoading={isLoading}
@@ -139,7 +172,12 @@ export function IngredientsPage() {
         thead={
           <tr>
             <th className="px-6 py-3 text-left text-label-caps text-on-surface-variant w-32">ID</th>
-            <th className="px-6 py-3 text-left text-label-caps text-on-surface-variant">NOMBRE</th>
+            <SortableTh
+              label="NOMBRE"
+              active={sortKey === "name"}
+              direction={direction}
+              onClick={() => toggle("name")}
+            />
             <th className="px-6 py-3 text-left text-label-caps text-on-surface-variant">DESCRIPCIÓN</th>
             <th className="px-6 py-3 text-left text-label-caps text-on-surface-variant">ALÉRGENO</th>
             <th className="px-6 py-3 text-left text-label-caps text-on-surface-variant">ESTADO</th>
@@ -147,7 +185,7 @@ export function IngredientsPage() {
           </tr>
         }
       >
-        {ingredients.map((ingredient) => (
+        {sortedIngredients.map((ingredient) => (
           <tr
             key={ingredient.id}
             className={`border-b border-outline-variant last:border-0 transition-colors ${

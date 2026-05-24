@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import { useUIStore } from '@/shared/store/uiStore'
 import Sidebar from '@/shared/components/Sidebar'
+import { Toaster } from '@/shared/components/Toaster'
 
 function activeItemFromPath(pathname: string): string {
   if (pathname.startsWith('/orders'))      return 'Orders'
@@ -29,6 +30,8 @@ export function DashboardLayout() {
           <Outlet />
         </main>
       </div>
+
+      <Toaster />
     </div>
   )
 }

@@ -6,10 +6,14 @@ import type {
   UpdateCategoryDto,
 } from '../types'
 
-export async function getCategories(offset: number, limit: number): Promise<CategoryList> {
-  const { data } = await apiClient.get<CategoryList>('/categories', {
-    params: { offset, limit },
-  })
+export async function getCategories(
+  offset: number,
+  limit: number,
+  name?: string,
+): Promise<CategoryList> {
+  const params: Record<string, unknown> = { offset, limit }
+  if (name) params.name = name
+  const { data } = await apiClient.get<CategoryList>('/categories', { params })
   return data
 }
 

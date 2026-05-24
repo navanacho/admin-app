@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Plus, FolderTree } from 'lucide-react'
+import { Plus, FolderTree, Search, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
 
 import {
   useCategories,
@@ -16,13 +16,18 @@ import { KpiCard }       from '@/shared/components/KpiCard'
 import { Modal }         from '@/shared/components/Modal'
 import { ConfirmModal }  from '@/shared/components/ConfirmModal'
 import { ButtonGeneric } from '@/shared/components/ButtonGeneric'
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue'
+import type { SortDirection } from '@/shared/hooks/useSortable'
 
 import type { Category, CategoryNode, CreateCategoryDto } from '../types'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Construye el árbol recursivo a partir de la lista plana. Ordena por order_display. */
-function buildTree(categories: Category[]): CategoryNode[] {
+/** Construye el árbol recursivo a partir de la lista plana. */
+function buildTree(
+  categories: Category[],
+  nameDirection: SortDirection = null,
+): CategoryNode[] {
   const map = new Map<number, CategoryNode>()
   categories.forEach((c) => map.set(c.id, { ...c, children: [] }))
 
@@ -37,7 +42,14 @@ function buildTree(categories: Category[]): CategoryNode[] {
   })
 
   const sortRecursive = (nodes: CategoryNode[]) => {
-    nodes.sort((a, b) => a.order_display - b.order_display)
+    if (nameDirection) {
+      nodes.sort((a, b) => {
+        const cmp = a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+        return nameDirection === 'asc' ? cmp : -cmp
+      })
+    } else {
+      nodes.sort((a, b) => a.order_display - b.order_display)
+    }
     nodes.forEach((n) => sortRecursive(n.children))
   }
   sortRecursive(roots)
@@ -60,7 +72,11 @@ function collectDescendants(rootId: number, all: Category[]): Set<number> {
 // ── Componente ───────────────────────────────────────────────────────────────
 
 export function CategoriesPage() {
-  const { data, isLoading, error } = useCategories(0, 100)
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search, 300)
+  const [nameSort, setNameSort] = useState<SortDirection>(null)
+
+  const { data, isLoading, error } = useCategories(0, 100, debouncedSearch || undefined)
   const { mutate: createCategory,     isPending: isCreating     } = useCreateCategory()
   const { mutate: updateCategory,     isPending: isUpdating     } = useUpdateCategory()
   const { mutate: deactivateCategory, isPending: isDeactivating } = useDeleteCategory()
@@ -74,8 +90,14 @@ export function CategoriesPage() {
   const rootCount   = categories.filter((c) => c.parent_id == null).length
   const subCount    = total - rootCount
 
-  // Árbol memoizado
-  const tree = useMemo(() => buildTree(categories), [categories])
+  // Árbol memoizado — recalcula cuando cambia la dirección del sort
+  const tree = useMemo(() => buildTree(categories, nameSort), [categories, nameSort])
+
+  function toggleNameSort() {
+    setNameSort((d) => (d === null ? 'asc' : d === 'asc' ? 'desc' : null))
+  }
+  const SortIcon =
+    nameSort === 'asc' ? ChevronUp : nameSort === 'desc' ? ChevronDown : ChevronsUpDown
 
   // ── Estado de expansión ──────────────────────────────────────────────────
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
@@ -192,8 +214,35 @@ export function CategoriesPage() {
 
       {/* Contenedor del árbol */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-outline-variant">
+        <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between gap-stack-md flex-wrap">
           <h2 className="text-headline-md text-on-surface">Árbol de Categorías</h2>
+
+          <div className="flex items-center gap-stack-sm">
+            <div className="relative">
+              <Search
+                size={14}
+                aria-hidden="true"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar categoría…"
+                className="w-64 bg-surface-container-low border border-outline-variant rounded-sm pl-9 pr-3 py-2 text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={toggleNameSort}
+              className={`inline-flex items-center gap-1 text-label-caps px-2 py-2 rounded-sm border border-outline-variant hover:bg-surface-container transition-colors ${
+                nameSort ? 'text-primary border-primary' : 'text-on-surface-variant'
+              }`}
+              aria-label="Ordenar por nombre"
+            >
+              NOMBRE <SortIcon size={12} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {isLoading ? (
