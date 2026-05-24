@@ -1,4 +1,4 @@
-import { Receipt, UtensilsCrossed, Refrigerator, LayoutGrid, Plus } from 'lucide-react'
+import { Receipt, UtensilsCrossed, Refrigerator, LayoutGrid, Users, Plus } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ButtonGeneric } from './ButtonGeneric'
@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { label: 'Products',    icon: UtensilsCrossed , to: '/products'    },
   { label: 'Ingredients', icon: Refrigerator    , to: '/ingredients' },
   { label: 'Categories',  icon: LayoutGrid      , to: '/categories'  },
+  { label: 'Users',       icon: Users           , to: '/users'       },
 ]
 
 function linkClasses(isActive: boolean): string {

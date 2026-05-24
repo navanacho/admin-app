@@ -8,6 +8,8 @@ import { DashboardPage }   from '@/features/dashboard'
 import { CategoriesPage } from '@/features/categories'
 import { IngredientsPage } from '@/features/ingredients'
 import { ProductsPage }    from '@/features/products'
+import { OrdersPage, OrderDetailPage } from '@/features/orders'
+import { UsersPage, UserDetailPage } from '@/features/users'
 import { ProtectedRoute }  from './ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -29,6 +31,10 @@ export const router = createBrowserRouter([
           { path: '/categories',              element: <CategoriesPage /> },
           { path: '/ingredients',             element: <IngredientsPage /> },
           { path: '/products',                element: <ProductsPage /> },
+          { path: '/orders',                  element: <OrdersPage /> },
+          { path: '/orders/:id',              element: <OrderDetailPage /> },
+          { path: '/users',                   element: <UsersPage /> },
+          { path: '/users/:id',               element: <UserDetailPage /> },
           // Catch-all dentro del dashboard: muestra 404 CON sidebar
           { path: '*',                        element: <NotFoundPage /> },
         ],
