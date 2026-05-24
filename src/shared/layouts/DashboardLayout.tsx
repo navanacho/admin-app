@@ -4,10 +4,12 @@ import Sidebar from '@/shared/components/Sidebar'
 import { Toaster } from '@/shared/components/Toaster'
 
 function activeItemFromPath(pathname: string): string {
-  if (pathname.startsWith('/orders'))      return 'Orders'
-  if (pathname.startsWith('/products'))    return 'Products'
-  if (pathname.startsWith('/ingredients')) return 'Ingredients'
-  if (pathname.startsWith('/categories'))  return 'Categories'
+  if (pathname.startsWith('/dashboard'))   return 'Dashboard'
+  if (pathname.startsWith('/orders'))      return 'Pedidos'
+  if (pathname.startsWith('/products'))    return 'Productos'
+  if (pathname.startsWith('/ingredients')) return 'Ingredientes'
+  if (pathname.startsWith('/categories'))  return 'Categorías'
+  if (pathname.startsWith('/users'))       return 'Usuarios'
   return ''
 }
 

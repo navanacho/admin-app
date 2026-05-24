@@ -1,20 +1,32 @@
-import { Receipt, UtensilsCrossed, Refrigerator, LayoutGrid, Users, Plus } from 'lucide-react'
+import {
+  Receipt,
+  UtensilsCrossed,
+  Refrigerator,
+  LayoutGrid,
+  Users,
+  LayoutDashboard,
+  UserCircle,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ButtonGeneric } from './ButtonGeneric'
+import { usePermissions } from '@/shared/hooks/usePermissions'
+import type { Permissions } from '@/shared/lib/permissions'
 
 interface NavItem {
   label: string
   icon: LucideIcon
   to: string
+  capability: keyof Permissions
 }
 
-const navItems: NavItem[] = [
-  { label: 'Orders',      icon: Receipt         , to: '/orders'      },
-  { label: 'Products',    icon: UtensilsCrossed , to: '/products'    },
-  { label: 'Ingredients', icon: Refrigerator    , to: '/ingredients' },
-  { label: 'Categories',  icon: LayoutGrid      , to: '/categories'  },
-  { label: 'Users',       icon: Users           , to: '/users'       },
+const allNavItems: NavItem[] = [
+  { label: 'Dashboard',    icon: LayoutDashboard, to: '/dashboard',   capability: 'canViewDashboard'     },
+  { label: 'Pedidos',      icon: Receipt,         to: '/orders',      capability: 'canViewOrders'        },
+  { label: 'Productos',    icon: UtensilsCrossed, to: '/products',    capability: 'canManageProducts'    },
+  { label: 'Ingredientes', icon: Refrigerator,    to: '/ingredients', capability: 'canManageIngredients' },
+  { label: 'Categorías',   icon: LayoutGrid,      to: '/categories',  capability: 'canManageCategories'  },
+  { label: 'Usuarios',     icon: Users,           to: '/users',       capability: 'canManageUsers'       },
 ]
 
 function linkClasses(isActive: boolean): string {
@@ -30,10 +42,12 @@ interface SidebarProps {
 
 export default function Sidebar({ activeItem = '' }: SidebarProps) {
   const navigate = useNavigate()
+  const perms = usePermissions()
 
-  function handleNewProduct() {
-    // Navega a productos con un query param que la página detecta para abrir el modal de crear
-    navigate('/products?action=create')
+  const visibleItems = allNavItems.filter((item) => perms[item.capability])
+
+  function goToProfile() {
+    navigate('/profile')
   }
 
   return (
@@ -47,7 +61,7 @@ export default function Sidebar({ activeItem = '' }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 space-y-1" aria-label="Primary">
-        {navItems.map(({ label, icon: Icon, to }) => {
+        {visibleItems.map(({ label, icon: Icon, to }) => {
           const isActive = label === activeItem
           return (
             <Link
@@ -63,12 +77,12 @@ export default function Sidebar({ activeItem = '' }: SidebarProps) {
         })}
       </nav>
 
-      {/* CTA — abrir modal de crear producto */}
+      {/* CTA — abrir perfil */}
       <div className="px-4 mt-auto">
         <ButtonGeneric
-          info={<><Plus size={18} aria-hidden="true" /> NUEVO PRODUCTO</>}
+          info={<><UserCircle size={18} aria-hidden="true" /> PERFIL</>}
           type="Primary"
-          onClick={handleNewProduct}
+          onClick={goToProfile}
           extraClass="w-full justify-center"
         />
       </div>

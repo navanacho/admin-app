@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 import { loginService, getMeService } from '../services/authService'
 import { InputField } from '@/shared/components/InputField'
 import { ButtonGeneric } from '@/shared/components/ButtonGeneric'
+import { getHomeRouteFor } from '@/shared/lib/permissions'
 
 // ── Validaciones puras ────────────────────────────────────────────────────────
 
@@ -31,8 +32,9 @@ export function LoginPage() {
   const [serverError,  setServerError]  = useState<string | null>(null)
   const [isPending,    setIsPending]    = useState(false)
 
-  // Si ya hay sesión activa, redirigir al dashboard
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />
+  // Si ya hay sesión activa, redirigir a la home según rol
+  const currentUser = useAuthStore((s) => s.user)
+  if (isAuthenticated) return <Navigate to={getHomeRouteFor(currentUser)} replace />
 
   const errors = {
     username: touched.username ? validateUsername(username) : undefined,
@@ -48,7 +50,7 @@ export function LoginPage() {
       await loginService({ username, password })
       const user = await getMeService()
       loginStore(user)
-      navigate('/dashboard')
+      navigate(getHomeRouteFor(user))
     } catch {
       setServerError('Usuario o contraseña incorrectos')
     } finally {

@@ -12,6 +12,7 @@ import { ChangeStateForm } from '../components/ChangeStateForm'
 import { PageHeader } from '@/shared/components/PageHeader'
 import { ButtonGeneric } from '@/shared/components/ButtonGeneric'
 import { KpiCard } from '@/shared/components/KpiCard'
+import { usePermissions } from '@/shared/hooks/usePermissions'
 import type { CambioEstadoDto } from '../types'
 
 function formatId(id: number): string {
@@ -44,6 +45,7 @@ export function OrderDetailPage() {
     isValidId ? id : null,
   )
   const { mutate: changeState, isPending: isChanging } = useChangeOrderState()
+  const perms = usePermissions()
 
   function handleChangeState(dto: CambioEstadoDto) {
     if (!order) return
@@ -151,11 +153,11 @@ export function OrderDetailPage() {
               </div>
               <div>
                 <p className="text-label-caps text-on-surface-variant">Última actualización</p>
-                <p className="text-body-sm text-rb-bone mt-1">{formatDate(order.updated_at)}</p>
+                <p className="text-body-sm text-on-surface mt-1">{formatDate(order.updated_at)}</p>
               </div>
               <div>
                 <p className="text-label-caps text-on-surface-variant">Dirección de entrega</p>
-                <p className="text-body-sm text-rb-bone mt-1">
+                <p className="text-body-sm text-on-surface mt-1">
                   {order.direccion_entrega_id != null
                     ? `#DIR-${order.direccion_entrega_id}`
                     : '—'}
@@ -163,14 +165,14 @@ export function OrderDetailPage() {
               </div>
               <div>
                 <p className="text-label-caps text-on-surface-variant">Forma de pago</p>
-                <p className="text-body-sm text-rb-bone mt-1">
+                <p className="text-body-sm text-on-surface mt-1">
                   {order.forma_pago_id != null ? `#PAG-${order.forma_pago_id}` : '—'}
                 </p>
               </div>
               {order.notas_cliente && (
                 <div className="col-span-2">
                   <p className="text-label-caps text-on-surface-variant">Notas del cliente</p>
-                  <p className="text-body-sm text-rb-bone mt-1 italic">"{order.notas_cliente}"</p>
+                  <p className="text-body-sm text-on-surface mt-1 italic">"{order.notas_cliente}"</p>
                 </div>
               )}
             </div>
@@ -219,7 +221,7 @@ export function OrderDetailPage() {
                         <span className="text-data-mono text-on-surface">{d.cantidad}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <span className="text-data-mono text-rb-bone font-semibold">
+                        <span className="text-data-mono text-on-surface font-semibold">
                           {formatPrice(d.subtotal)}
                         </span>
                       </td>
@@ -250,7 +252,7 @@ export function OrderDetailPage() {
                       className="flex items-start gap-3 border-l-2 border-primary pl-3 py-1"
                     >
                       <div className="flex-1">
-                        <p className="text-label-caps text-rb-bone">
+                        <p className="text-label-caps text-on-surface">
                           {h.estado_codigo ?? `Estado #${h.estado_id}`}
                         </p>
                         {h.observaciones && (
@@ -281,20 +283,22 @@ export function OrderDetailPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-md overflow-hidden">
-            <header className="px-6 py-4 border-b border-outline-variant">
-              <h2 className="text-headline-md text-on-surface">Cambiar estado</h2>
-            </header>
-            <div className="p-6">
-              <ChangeStateForm
-                key={`${order.id}-${order.estado_codigo}`}
-                currentState={order.estado_codigo}
-                onSubmit={handleChangeState}
-                onCancel={() => navigate('/orders')}
-                isPending={isChanging}
-              />
-            </div>
-          </section>
+          {perms.canChangeOrderState && (
+            <section className="bg-surface-container-lowest border border-outline-variant rounded-md overflow-hidden">
+              <header className="px-6 py-4 border-b border-outline-variant">
+                <h2 className="text-headline-md text-on-surface">Cambiar estado</h2>
+              </header>
+              <div className="p-6">
+                <ChangeStateForm
+                  key={`${order.id}-${order.estado_codigo}`}
+                  currentState={order.estado_codigo}
+                  onSubmit={handleChangeState}
+                  onCancel={() => navigate('/orders')}
+                  isPending={isChanging}
+                />
+              </div>
+            </section>
+          )}
         </aside>
       </div>
     </div>

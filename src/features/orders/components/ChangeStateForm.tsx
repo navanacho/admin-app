@@ -39,7 +39,7 @@ export function ChangeStateForm({
       <div className="flex flex-col gap-stack-md">
         <p className="text-body-sm text-on-surface-variant">
           El pedido está en estado{' '}
-          <strong className="text-rb-bone">{getStateLabel(currentState)}</strong>.
+          <strong className="text-on-surface">{getStateLabel(currentState)}</strong>.
           No tiene transiciones disponibles — es un estado final.
         </p>
         <div className="flex justify-end">

@@ -172,7 +172,7 @@ export function OrdersPage() {
                 <span className="text-data-mono text-on-surface">{itemsCount}</span>
               </td>
               <td className="px-6 py-4 text-right">
-                <span className="text-data-mono text-rb-bone font-semibold">
+                <span className="text-data-mono text-on-surface font-semibold">
                   {formatPrice(order.total)}
                 </span>
               </td>
