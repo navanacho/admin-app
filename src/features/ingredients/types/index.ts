@@ -1,14 +1,15 @@
 // ─── Entidad principal ─────────────────────────────────────────────────────
 
 export interface Ingredient {
-  id:          number
-  name:        string
-  description: string | null
-  is_allergen: boolean
-  is_active:   boolean
-  created_at:  string
-  updated_at:  string
-  deleted_at:  string | null
+  id:             number
+  name:           string
+  description:    string | null
+  stock_quantity: number
+  is_allergen:    boolean
+  is_active:      boolean
+  created_at:     string
+  updated_at:     string
+  deleted_at:     string | null
 }
 
 // ─── Respuesta de lista ────────────────────────────────────────────────────
@@ -21,13 +22,15 @@ export interface IngredientList {
 // ─── DTOs ──────────────────────────────────────────────────────────────────
 
 export interface CreateIngredientDto {
-  name:        string
-  description: string | null
-  is_allergen: boolean
+  name:           string
+  description:    string | null
+  stock_quantity: number
+  is_allergen:    boolean
 }
 
 export interface UpdateIngredientDto {
-  name?:        string | null
-  description?: string | null
-  is_allergen?: boolean | null
+  name?:           string | null
+  description?:    string | null
+  stock_quantity?: number | null
+  is_allergen?:    boolean | null
 }

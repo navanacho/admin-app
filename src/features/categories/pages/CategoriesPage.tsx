@@ -121,15 +121,19 @@ export function CategoriesPage() {
   }
 
   // ── Modal Crear ───────────────────────────────────────────────────────────
+  // Nonce para forzar remount del form en cada apertura → evita state stale.
   const createModalRef = useRef<HTMLDialogElement>(null)
   const [createInitialParentId, setCreateInitialParentId] = useState<number | null>(null)
+  const [createNonce, setCreateNonce] = useState(0)
 
   function openCreateRoot() {
     setCreateInitialParentId(null)
+    setCreateNonce((n) => n + 1)
     createModalRef.current?.showModal()
   }
   function openCreateChild(parent: CategoryNode) {
     setCreateInitialParentId(parent.id)
+    setCreateNonce((n) => n + 1)
     // Asegurar que el padre esté expandido para que veas el resultado
     setExpandedIds((prev) => new Set(prev).add(parent.id))
     createModalRef.current?.showModal()
@@ -143,9 +147,11 @@ export function CategoriesPage() {
   // ── Modal Editar ──────────────────────────────────────────────────────────
   const editModalRef = useRef<HTMLDialogElement>(null)
   const [editing, setEditing] = useState<Category | null>(null)
+  const [editNonce, setEditNonce] = useState(0)
 
   function openEdit(node: Category) {
     setEditing(node)
+    setEditNonce((n) => n + 1)
     editModalRef.current?.showModal()
   }
   function handleUpdate(dto: CreateCategoryDto) {
@@ -276,7 +282,7 @@ export function CategoriesPage() {
       {/* Modal — Crear */}
       <Modal dialogRef={createModalRef} title="Crear Categoría">
         <CategoryForm
-          key={`create-${createInitialParentId ?? 'root'}`}
+          key={`create-${createInitialParentId ?? 'root'}-${createNonce}`}
           initialValues={{
             parent_id:     createInitialParentId,
             name:          '',
@@ -294,7 +300,7 @@ export function CategoriesPage() {
       {/* Modal — Editar */}
       <Modal dialogRef={editModalRef} title="Editar Categoría">
         <CategoryForm
-          key={`edit-${editing?.id}`}
+          key={`edit-${editing?.id ?? 'none'}-${editNonce}`}
           initialValues={editing ? {
             parent_id:     editing.parent_id,
             name:          editing.name,

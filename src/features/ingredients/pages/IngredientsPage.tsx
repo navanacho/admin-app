@@ -10,6 +10,7 @@ import {
 } from "../hooks/useIngredients";
 import { AllergenBadge } from "../components/AllergenBadge";
 import { IngredientForm } from "../components/IngredientForm";
+import { IngredientLowStockSection } from "../components/IngredientLowStockSection";
 
 import { PageHeader }    from "@/shared/components/PageHeader";
 import { KpiCard }       from "@/shared/components/KpiCard";
@@ -57,8 +58,11 @@ export function IngredientsPage() {
 
   const { sorted: sortedIngredients, sortKey, direction, toggle } = useSortable<Ingredient>(ingredients);
 
-  const allergenCount = ingredients.filter((i) => i.is_allergen).length;
-  const activeCount   = ingredients.filter((i) => i.is_active).length;
+  const allergenCount  = ingredients.filter((i) => i.is_allergen).length;
+  const activeCount    = ingredients.filter((i) => i.is_active).length;
+  const lowStockCount  = ingredients.filter(
+    (i) => i.is_active && i.stock_quantity < 10,
+  ).length;
 
   const hasPrev = offset > 0;
   const hasNext = offset + LIMIT < total;
@@ -67,7 +71,14 @@ export function IngredientsPage() {
   function goPrev() { setOffset((o) => Math.max(0, o - LIMIT)); }
 
   // ── Modal crear ───────────────────────────────────────────────────────────
+  // Nonce para remount del form en cada apertura → evita arrastrar state.
   const createModalRef = useRef<HTMLDialogElement>(null);
+  const [createNonce, setCreateNonce] = useState(0);
+
+  function openCreate() {
+    setCreateNonce((n) => n + 1);
+    createModalRef.current?.showModal();
+  }
 
   function handleCreate(dto: CreateIngredientDto) {
     createIngredient(dto, {
@@ -78,9 +89,11 @@ export function IngredientsPage() {
   // ── Modal editar ──────────────────────────────────────────────────────────
   const editModalRef = useRef<HTMLDialogElement>(null);
   const [editing, setEditing] = useState<Ingredient | null>(null);
+  const [editNonce, setEditNonce] = useState(0);
 
   function openEdit(ingredient: Ingredient) {
     setEditing(ingredient);
+    setEditNonce((n) => n + 1);
     editModalRef.current?.showModal();
   }
 
@@ -116,13 +129,13 @@ export function IngredientsPage() {
         action={
           <ButtonGeneric
             info={<><Plus size={16} aria-hidden="true" /> Nuevo Ingrediente</>}
-            onClick={() => createModalRef.current?.showModal()}
+            onClick={openCreate}
             disabled={!!error}
           />
         }
       />
 
-      <div className="grid grid-cols-3 gap-stack-md">
+      <div className="grid grid-cols-4 gap-stack-md">
         <KpiCard label="Total Ingredientes" value={total} />
         <KpiCard
           variant="warning"
@@ -136,7 +149,16 @@ export function IngredientsPage() {
           value={activeCount}
           subLabel="En uso actualmente"
         />
+        <KpiCard
+          variant="warning"
+          icon={<AlertTriangle size={13} aria-hidden="true" />}
+          label="Bajo Stock"
+          value={lowStockCount}
+          subLabel="Stock < 10"
+        />
       </div>
+
+      <IngredientLowStockSection />
 
       <div className="flex items-center justify-end">
         <div className="relative">
@@ -179,6 +201,7 @@ export function IngredientsPage() {
               onClick={() => toggle("name")}
             />
             <th className="px-6 py-3 text-left text-label-caps text-on-surface-variant">DESCRIPCIÓN</th>
+            <th className="px-6 py-3 text-right text-label-caps text-on-surface-variant">STOCK</th>
             <th className="px-6 py-3 text-left text-label-caps text-on-surface-variant">ALÉRGENO</th>
             <th className="px-6 py-3 text-left text-label-caps text-on-surface-variant">ESTADO</th>
             <th className="px-6 py-3 text-right text-label-caps text-on-surface-variant">ACCIONES</th>
@@ -205,6 +228,17 @@ export function IngredientsPage() {
             <td className="px-6 py-4">
               <span className="text-body-sm text-on-surface-variant line-clamp-1 max-w-xs">
                 {ingredient.description ?? "—"}
+              </span>
+            </td>
+            <td className="px-6 py-4 text-right">
+              <span
+                className={`text-data-mono ${
+                  ingredient.stock_quantity < 10
+                    ? "text-warning font-bold"
+                    : "text-on-surface"
+                }`}
+              >
+                {ingredient.stock_quantity}
               </span>
             </td>
             <td className="px-6 py-4">
@@ -260,6 +294,7 @@ export function IngredientsPage() {
       {/* Modal — Crear */}
       <Modal dialogRef={createModalRef} title="Crear Ingrediente">
         <IngredientForm
+          key={`create-${createNonce}`}
           onSubmit={handleCreate}
           onCancel={() => createModalRef.current?.close()}
           isPending={isCreating}
@@ -269,11 +304,12 @@ export function IngredientsPage() {
       {/* Modal — Editar */}
       <Modal dialogRef={editModalRef} title="Editar Ingrediente">
         <IngredientForm
-          key={editing?.id}
+          key={`edit-${editing?.id ?? 'none'}-${editNonce}`}
           initialValues={editing ? {
-            name:        editing.name,
-            description: editing.description ?? '',
-            is_allergen: editing.is_allergen,
+            name:           editing.name,
+            description:    editing.description ?? '',
+            stock_quantity: editing.stock_quantity,
+            is_allergen:    editing.is_allergen,
           } : undefined}
           onSubmit={handleUpdate}
           onCancel={() => editModalRef.current?.close()}

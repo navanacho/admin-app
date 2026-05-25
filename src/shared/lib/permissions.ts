@@ -30,6 +30,15 @@ export function hasRole(user: User | null, code: RoleCode): boolean {
   return user.roles.some((r) => r.rol_code === code)
 }
 
+/**
+ * Devuelve true si el usuario tiene al menos un rol que le da acceso al panel
+ * de administración. Los usuarios CLIENT-only quedan fuera.
+ */
+export function hasAdminAccess(user: User | null): boolean {
+  if (!user) return false
+  return hasRole(user, 'ADMIN') || hasRole(user, 'STOCK') || hasRole(user, 'PEDIDOS')
+}
+
 /** Mapea la matriz de capabilities desde los roles del usuario. */
 export function computePermissions(user: User | null): Permissions {
   if (!user) return NO_PERMISSIONS

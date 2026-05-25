@@ -4,7 +4,8 @@ export interface DashboardStats {
   ticket_promedio_hoy:   string
   pedidos_pendientes:    number
   pedidos_semana:        number
-  productos_activos:     number
-  productos_bajo_stock:  number
-  ingredientes_activos:  number
+  productos_activos:       number
+  productos_bajo_stock:    number
+  ingredientes_activos:    number
+  ingredientes_bajo_stock: number
 }

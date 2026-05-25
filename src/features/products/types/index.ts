@@ -10,6 +10,7 @@ export interface ProductIngredientLink {
   id:           number
   name:         string
   is_removable: boolean
+  quantity:     number
   is_allergen:  boolean
 }
 
@@ -47,6 +48,8 @@ export interface ProductCategoryInput {
 export interface ProductIngredientInput {
   id:           number
   is_removable: boolean
+  /** Cantidad de unidades del ingrediente que consume el producto. Default 1, min 1 — opcional porque el backend completa el default. */
+  quantity?:    number
 }
 
 export interface CreateProductDto {

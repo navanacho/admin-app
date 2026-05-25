@@ -96,7 +96,14 @@ export function useLowStockProducts(threshold = 10) {
     queryFn:  () => getProducts(0, 100),
     select:   (result) => ({
       items: result.data
-        .filter((p) => p.deleted_at == null && p.stock_quantity < threshold)
+        // Solo standalone — los productos con receta consumen ingredientes,
+        // su stock_quantity no es métrica útil.
+        .filter(
+          (p) =>
+            p.deleted_at == null &&
+            p.ingredients.length === 0 &&
+            p.stock_quantity < threshold,
+        )
         .sort((a, b) => a.stock_quantity - b.stock_quantity),
       threshold,
     }),

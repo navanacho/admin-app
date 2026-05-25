@@ -108,15 +108,29 @@ export function DashboardPage() {
           <KpiCard
             variant="warning"
             icon={<AlertTriangle size={13} aria-hidden="true" />}
-            label="Bajo stock"
+            label="Productos bajo stock"
             value={data.productos_bajo_stock}
-            subLabel="Stock < 10"
+            subLabel="Stock propio < 10"
           />
           <KpiCard
             icon={<Refrigerator size={13} aria-hidden="true" />}
             label="Ingredientes activos"
             value={data.ingredientes_activos}
             subLabel="Disponibles en cocina"
+          />
+        </div>
+      </section>
+
+      {/* ── Sección: Alertas de Stock ────────────────────────────────────── */}
+      <section className="flex flex-col gap-stack-md">
+        <h2 className="text-label-caps text-on-surface-variant">Alertas</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-stack-md">
+          <KpiCard
+            variant="warning"
+            icon={<AlertTriangle size={13} aria-hidden="true" />}
+            label="Ingredientes bajo stock"
+            value={data.ingredientes_bajo_stock}
+            subLabel="Stock < 10"
           />
         </div>
       </section>

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { InputField } from '@/shared/components/InputField'
 import { ButtonGeneric } from '@/shared/components/ButtonGeneric'
+import { ConfirmModal } from '@/shared/components/ConfirmModal'
 import { ImageUrlsField } from './ImageUrlsField'
 import { CategoryMultiSelect } from './CategoryMultiSelect'
 import { IngredientMultiSelect } from './IngredientMultiSelect'
@@ -21,6 +22,8 @@ interface ProductFormProps {
   onCancel: () => void
   isPending?: boolean
 }
+
+type ProductType = 'recipe' | 'standalone'
 
 // ── Validaciones puras ────────────────────────────────────────────────────────
 
@@ -71,14 +74,59 @@ export function ProductForm({
   const [categories,    setCategories]    = useState<ProductCategoryInput[]>(initialValues?.categories ?? [])
   const [ingredients,   setIngredients]   = useState<ProductIngredientInput[]>(initialValues?.ingredients ?? [])
 
+  // Tipo de stock: con receta (descuenta de ingredientes) o stock propio (standalone).
+  // Inicial: si vino con ingredientes preexistentes, asumimos receta; sino standalone.
+  const [productType, setProductType] = useState<ProductType>(
+    (initialValues?.ingredients?.length ?? 0) > 0 ? 'recipe' : 'standalone',
+  )
+
+  // Modal de confirmación al cambiar de tipo si hay datos del otro lado.
+  const [pendingTypeChange, setPendingTypeChange] = useState<ProductType | null>(null)
+  const confirmTypeChangeRef = useRef<HTMLDialogElement>(null)
+
+  function changeProductType(next: ProductType) {
+    if (next === productType) return
+
+    const losesIngredients = next === 'standalone' && ingredients.length > 0
+    const losesStock       = next === 'recipe'     && stockQuantity > 0
+
+    if (losesIngredients || losesStock) {
+      setPendingTypeChange(next)
+      confirmTypeChangeRef.current?.showModal()
+      return
+    }
+
+    setProductType(next)
+  }
+
+  function handleConfirmTypeChange() {
+    if (!pendingTypeChange) return
+    if (pendingTypeChange === 'standalone') {
+      setIngredients([])
+    } else {
+      setStockQuantity(0)
+    }
+    setProductType(pendingTypeChange)
+    confirmTypeChangeRef.current?.close()
+    setPendingTypeChange(null)
+  }
+
+  function handleCancelTypeChange() {
+    confirmTypeChangeRef.current?.close()
+    setPendingTypeChange(null)
+  }
+
   const [touched, setTouched] = useState({
     name: false, basePrice: false, stockQuantity: false, prepTime: false, categories: false,
   })
 
+  const isStandalone = productType === 'standalone'
+
   const errors = {
     name:          touched.name          ? validateName(name)                  : undefined,
     basePrice:     touched.basePrice     ? validatePrice(basePrice)            : undefined,
-    stockQuantity: touched.stockQuantity ? validateStock(stockQuantity)        : undefined,
+    // Stock solo aplica si es standalone — para recipe el campo no se muestra.
+    stockQuantity: isStandalone && touched.stockQuantity ? validateStock(stockQuantity) : undefined,
     prepTime:      touched.prepTime      ? validatePrepTime(prepTime)          : undefined,
     categories:    touched.categories    ? validateCategories(categories)      : undefined,
   }
@@ -86,7 +134,7 @@ export function ProductForm({
   const isValid =
     !validateName(name) &&
     !validatePrice(basePrice) &&
-    !validateStock(stockQuantity) &&
+    (!isStandalone || !validateStock(stockQuantity)) &&
     !validatePrepTime(prepTime) &&
     !validateCategories(categories)
 
@@ -99,18 +147,55 @@ export function ProductForm({
       name:           name.trim(),
       description:    description.trim() === '' ? null : description.trim(),
       base_price:     basePrice,
-      stock_quantity: stockQuantity,
+      // XOR: standalone usa su stock; recipe va siempre con 0 porque el back
+      // descuenta de ingredientes y stock_quantity se vuelve dato muerto.
+      stock_quantity: isStandalone ? stockQuantity : 0,
       prep_time_min:  prepTime,
       available,
       // Filtramos URLs vacías
       image_urls:     imageUrls.map((u) => u.trim()).filter((u) => u.length > 0),
       categories,
-      ingredients,
+      ingredients:    isStandalone ? [] : ingredients,
     })
   }
 
   return (
+    <>
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-stack-md">
+      {/* Selector de tipo de stock */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-label-caps text-rb-bone/60">Tipo de stock</label>
+        <div className="grid grid-cols-2 gap-1 bg-rb-charcoal border border-white/10 rounded-sm p-1">
+          <button
+            type="button"
+            onClick={() => changeProductType('standalone')}
+            className={`px-3 py-2 rounded-sm text-body-sm transition-colors ${
+              isStandalone
+                ? 'bg-primary text-on-primary font-semibold'
+                : 'text-rb-bone/70 hover:bg-rb-bone/5'
+            }`}
+          >
+            Stock propio
+          </button>
+          <button
+            type="button"
+            onClick={() => changeProductType('recipe')}
+            className={`px-3 py-2 rounded-sm text-body-sm transition-colors ${
+              !isStandalone
+                ? 'bg-primary text-on-primary font-semibold'
+                : 'text-rb-bone/70 hover:bg-rb-bone/5'
+            }`}
+          >
+            Con receta
+          </button>
+        </div>
+        <p className="text-data-mono text-[11px] text-rb-bone/50">
+          {isStandalone
+            ? 'El stock se descuenta del propio producto (ej: bebidas, postres empacados).'
+            : 'El stock se calcula a partir de los ingredientes (ej: hamburguesas).'}
+        </p>
+      </div>
+
       <InputField
         label="Nombre"
         value={name}
@@ -130,7 +215,7 @@ export function ProductForm({
         rows={2}
       />
 
-      <div className="grid grid-cols-3 gap-stack-md">
+      <div className={`grid gap-stack-md ${isStandalone ? 'grid-cols-3' : 'grid-cols-2'}`}>
         <InputField
           label="Precio base"
           value={basePrice.toString()}
@@ -141,16 +226,18 @@ export function ProductForm({
           error={errors.basePrice}
           required
         />
-        <InputField
-          label="Stock"
-          value={stockQuantity.toString()}
-          onChange={(v) => setStockQuantity(Number(v) || 0)}
-          onBlur={() => setTouched((t) => ({ ...t, stockQuantity: true }))}
-          placeholder="0"
-          type="number"
-          error={errors.stockQuantity}
-          required
-        />
+        {isStandalone && (
+          <InputField
+            label="Stock"
+            value={stockQuantity.toString()}
+            onChange={(v) => setStockQuantity(Number(v) || 0)}
+            onBlur={() => setTouched((t) => ({ ...t, stockQuantity: true }))}
+            placeholder="0"
+            type="number"
+            error={errors.stockQuantity}
+            required
+          />
+        )}
         <InputField
           label="Tiempo prep. (min)"
           value={prepTime?.toString() ?? ''}
@@ -190,12 +277,14 @@ export function ProductForm({
         required
       />
 
-      <IngredientMultiSelect
-        label="Ingredientes"
-        available={availableIngredients}
-        value={ingredients}
-        onChange={setIngredients}
-      />
+      {!isStandalone && (
+        <IngredientMultiSelect
+          label="Ingredientes"
+          available={availableIngredients}
+          value={ingredients}
+          onChange={setIngredients}
+        />
+      )}
 
       <div className="flex justify-end gap-stack-md mt-stack-sm">
         <ButtonGeneric
@@ -212,5 +301,33 @@ export function ProductForm({
         />
       </div>
     </form>
+
+    <ConfirmModal
+      dialogRef={confirmTypeChangeRef}
+      title={
+        pendingTypeChange === 'standalone'
+          ? 'Cambiar a "Stock propio"'
+          : 'Cambiar a "Con receta"'
+      }
+      message={
+        pendingTypeChange === 'standalone' ? (
+          <>
+            Vas a quitar los <strong className="text-rb-bone">{ingredients.length}</strong>{' '}
+            ingrediente{ingredients.length === 1 ? '' : 's'} cargado
+            {ingredients.length === 1 ? '' : 's'} en la receta. ¿Continuar?
+          </>
+        ) : (
+          <>
+            El stock propio (<strong className="text-rb-bone">{stockQuantity}</strong> unidad
+            {stockQuantity === 1 ? '' : 'es'}) se descarta y el stock pasa a
+            calcularse desde los ingredientes. ¿Continuar?
+          </>
+        )
+      }
+      confirmLabel="Continuar"
+      onConfirm={handleConfirmTypeChange}
+      onCancel={handleCancelTypeChange}
+    />
+    </>
   )
 }

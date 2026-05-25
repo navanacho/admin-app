@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { loginService, getMeService } from '../services/authService'
+import { loginService, logoutService, getMeService } from '../services/authService'
 import { InputField } from '@/shared/components/InputField'
 import { ButtonGeneric } from '@/shared/components/ButtonGeneric'
-import { getHomeRouteFor } from '@/shared/lib/permissions'
+import { getHomeRouteFor, hasAdminAccess } from '@/shared/lib/permissions'
 
 // ── Validaciones puras ────────────────────────────────────────────────────────
 
@@ -24,6 +24,8 @@ export function LoginPage() {
   // Todos los hooks antes de cualquier return condicional
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const loginStore      = useAuthStore((s) => s.login)
+  const logoutStore     = useAuthStore((s) => s.logout)
+  const currentUser     = useAuthStore((s) => s.user)
   const navigate        = useNavigate()
 
   const [username,     setUsername]     = useState('')
@@ -32,9 +34,18 @@ export function LoginPage() {
   const [serverError,  setServerError]  = useState<string | null>(null)
   const [isPending,    setIsPending]    = useState(false)
 
-  // Si ya hay sesión activa, redirigir a la home según rol
-  const currentUser = useAuthStore((s) => s.user)
-  if (isAuthenticated) return <Navigate to={getHomeRouteFor(currentUser)} replace />
+  // Limpieza de sesión persistida sin acceso (ej. CLIENT que loggeó antes
+  // de este gate y quedó en localStorage). Cae al render normal del login.
+  useEffect(() => {
+    if (isAuthenticated && !hasAdminAccess(currentUser)) {
+      logoutStore()
+    }
+  }, [isAuthenticated, currentUser, logoutStore])
+
+  // Si ya hay sesión activa Y con acceso, redirigir a la home según rol.
+  if (isAuthenticated && hasAdminAccess(currentUser)) {
+    return <Navigate to={getHomeRouteFor(currentUser)} replace />
+  }
 
   const errors = {
     username: touched.username ? validateUsername(username) : undefined,
@@ -49,6 +60,15 @@ export function LoginPage() {
     try {
       await loginService({ username, password })
       const user = await getMeService()
+
+      if (!hasAdminAccess(user)) {
+        // Cookie quedó seteada por el back; la invalidamos para que el
+        // usuario no pueda llamar endpoints autenticados desde otra app.
+        await logoutService().catch(() => undefined)
+        setServerError('Esta cuenta no tiene acceso al panel de administración.')
+        return
+      }
+
       loginStore(user)
       navigate(getHomeRouteFor(user))
     } catch {

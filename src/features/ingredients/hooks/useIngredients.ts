@@ -74,6 +74,25 @@ export function useDeleteIngredient() {
   });
 }
 
+/**
+ * Devuelve los ingredientes con stock por debajo del threshold.
+ *
+ * ⚠ TODO: reemplazar por endpoint dedicado `/ingredientes/low-stock?threshold=N`
+ *         cuando exista. Por ahora trae los primeros 100 y filtra en cliente.
+ */
+export function useLowStockIngredients(threshold = 10) {
+  return useQuery({
+    queryKey: [QUERY_KEY, "low-stock", threshold],
+    queryFn: () => getIngredients(0, 100),
+    select: (result) => ({
+      items: result.data
+        .filter((i) => i.is_active && i.stock_quantity < threshold)
+        .sort((a, b) => a.stock_quantity - b.stock_quantity),
+      threshold,
+    }),
+  });
+}
+
 export function useActivateIngredient() {
   const qc = useQueryClient();
   return useMutation({

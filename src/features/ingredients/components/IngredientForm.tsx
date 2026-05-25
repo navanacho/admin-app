@@ -6,9 +6,10 @@ import { InputField } from '@/shared/components/InputField'
 interface IngredientFormProps {
   /** Si se pasa, el form arranca pre-llenado (modo edición) */
   initialValues?: {
-    name:        string
-    description: string
-    is_allergen: boolean
+    name:           string
+    description:    string
+    stock_quantity: number
+    is_allergen:    boolean
   }
   onSubmit:  (dto: CreateIngredientDto) => void
   onCancel:  () => void
@@ -20,6 +21,13 @@ function validateName(value: string): string | undefined {
   if (value.trim().length === 0) return 'El nombre es requerido'
   if (value.trim().length < 2)   return 'Mínimo 2 caracteres'
   if (value.trim().length > 100) return 'Máximo 100 caracteres'
+}
+
+function validateStock(value: string): string | undefined {
+  if (value.trim() === '') return 'El stock es requerido'
+  const n = Number(value)
+  if (!Number.isInteger(n)) return 'Debe ser un entero'
+  if (n < 0) return 'No puede ser negativo'
 }
 
 /**
@@ -34,10 +42,11 @@ export function IngredientForm({
 }: IngredientFormProps) {
   const [name,        setName]        = useState(initialValues?.name        ?? '')
   const [description, setDescription] = useState(initialValues?.description ?? '')
+  const [stockQty,    setStockQty]    = useState(String(initialValues?.stock_quantity ?? 0))
   const [isAllergen,  setIsAllergen]  = useState(initialValues?.is_allergen ?? false)
 
   // Touched: solo mostramos error después de que el usuario tocó el campo
-  const [touched, setTouched] = useState({ name: false })
+  const [touched, setTouched] = useState({ name: false, stock: false })
 
   function touch(field: keyof typeof touched) {
     setTouched(t => ({ ...t, [field]: true }))
@@ -45,10 +54,11 @@ export function IngredientForm({
 
   // ── Errores computados ────────────────────────────────────────────────────
   const errors = {
-    name: touched.name ? validateName(name) : undefined,
+    name:  touched.name  ? validateName(name)     : undefined,
+    stock: touched.stock ? validateStock(stockQty) : undefined,
   }
 
-  const isValid = !validateName(name)
+  const isValid = !validateName(name) && !validateStock(stockQty)
 
   // ── Submit ────────────────────────────────────────────────────────────────
   function handleSubmit(e: React.FormEvent) {
@@ -57,6 +67,7 @@ export function IngredientForm({
     onSubmit({
       name: name.trim(),
       description: description.trim() === '' ? null : description.trim(),
+      stock_quantity: Number(stockQty),
       is_allergen: isAllergen,
     })
   }
@@ -83,6 +94,17 @@ export function IngredientForm({
         value={description}
         onChange={setDescription}
         placeholder="Descripción del ingrediente..."
+      />
+
+      <InputField
+        label="Stock"
+        required
+        type="number"
+        value={stockQty}
+        onChange={setStockQty}
+        onBlur={() => touch('stock')}
+        placeholder="0"
+        error={errors.stock}
       />
 
       {/* Alérgeno */}

@@ -90,16 +90,26 @@ export function ProductsPage() {
   }
 
   // ── Modal Crear ───────────────────────────────────────────────────────────
+  // El nonce bumpea en cada apertura para forzar remount del form (evita
+  // arrastrar state del intento anterior, ej. productType o ingredients).
   const createModalRef = useRef<HTMLDialogElement>(null);
+  const [createNonce, setCreateNonce] = useState(0);
+
+  function openCreate() {
+    setCreateNonce((n) => n + 1);
+    createModalRef.current?.showModal();
+  }
 
   // Si llegamos con ?action=create (típicamente desde el botón del sidebar),
   // abrimos el modal y limpiamos el query param para evitar reabrirlo al refrescar.
   const [searchParams, setSearchParams] = useSearchParams();
   useEffect(() => {
     if (searchParams.get("action") === "create") {
-      createModalRef.current?.showModal();
+      openCreate();
       setSearchParams({}, { replace: true });
     }
+    // openCreate es estable (solo usa refs/setters); intencionalmente fuera de deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, setSearchParams]);
 
   function handleCreate(dto: CreateProductDto) {
@@ -111,9 +121,11 @@ export function ProductsPage() {
   // ── Modal Editar ──────────────────────────────────────────────────────────
   const editModalRef = useRef<HTMLDialogElement>(null);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [editNonce, setEditNonce] = useState(0);
 
   function openEdit(product: Product) {
     setEditing(product);
+    setEditNonce((n) => n + 1);
     editModalRef.current?.showModal();
   }
 
@@ -156,7 +168,7 @@ export function ProductsPage() {
                 <Plus size={16} aria-hidden="true" /> Nuevo Producto
               </>
             }
-            onClick={() => createModalRef.current?.showModal()}
+            onClick={openCreate}
             disabled={!!error}
           />
         }
@@ -240,7 +252,9 @@ export function ProductsPage() {
         {sortedProducts.map((product) => {
           const isDeleted = product.deleted_at != null;
           const primaryCat = product.categories.find((c) => c.is_primary);
-          const isLowStock = product.stock_quantity < 10;
+          // Productos con receta: el stock vive en los ingredientes, no en el producto.
+          const hasRecipe  = product.ingredients.length > 0;
+          const isLowStock = !hasRecipe && product.stock_quantity < 10;
 
           return (
             <tr
@@ -269,11 +283,20 @@ export function ProductsPage() {
                 </span>
               </td>
               <td className="px-6 py-4 text-right">
-                <span
-                  className={`text-data-mono ${isLowStock ? "text-warning font-bold" : "text-on-surface"}`}
-                >
-                  {product.stock_quantity}
-                </span>
+                {hasRecipe ? (
+                  <span
+                    className="text-data-mono text-on-surface-variant"
+                    title="El stock se calcula a partir de los ingredientes"
+                  >
+                    —
+                  </span>
+                ) : (
+                  <span
+                    className={`text-data-mono ${isLowStock ? "text-warning font-bold" : "text-on-surface"}`}
+                  >
+                    {product.stock_quantity}
+                  </span>
+                )}
               </td>
               <td className="px-6 py-4">
                 <span className="text-body-sm text-on-surface-variant">
@@ -355,6 +378,7 @@ export function ProductsPage() {
       {/* Modal — Crear */}
       <Modal dialogRef={createModalRef} title="Crear Producto" size="lg">
         <ProductForm
+          key={`create-${createNonce}`}
           availableCategories={availableCategories}
           availableIngredients={availableIngredients}
           onSubmit={handleCreate}
@@ -366,7 +390,7 @@ export function ProductsPage() {
       {/* Modal — Editar */}
       <Modal dialogRef={editModalRef} title="Editar Producto" size="lg">
         <ProductForm
-          key={editing?.id}
+          key={`edit-${editing?.id ?? 'none'}-${editNonce}`}
           initialValues={
             editing
               ? {
@@ -384,6 +408,7 @@ export function ProductsPage() {
                   ingredients: editing.ingredients.map((i) => ({
                     id: i.id,
                     is_removable: i.is_removable,
+                    quantity: i.quantity,
                   })),
                 }
               : undefined
