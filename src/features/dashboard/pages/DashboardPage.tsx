@@ -1,9 +1,7 @@
 import {
   Receipt,
   DollarSign,
-  CircleDollarSign,
   Clock,
-  CalendarRange,
   Package,
   AlertTriangle,
   Refrigerator,
@@ -11,9 +9,15 @@ import {
 
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useDashboardStats } from '../hooks/useDashboardStats'
+import { useTicketEvolution } from '../hooks/useTicketEvolution'
+import { useOrdersByStatus } from '../hooks/useOrdersByStatus'
+import { useOrdersByDay } from '../hooks/useOrdersByDay'
 
 import { PageHeader } from '@/shared/components/PageHeader'
 import { KpiCard }    from '@/shared/components/KpiCard'
+import { LineTicketChart } from '../components/LineTicketChart'
+import { PieOrdersStatus } from '../components/PieOrdersStatus'
+import { BarOrdersWeek }   from '../components/BarOrdersWeek'
 
 function formatPrice(value: string | number): string {
   const n = typeof value === 'string' ? parseFloat(value) : value
@@ -25,13 +29,17 @@ function formatPrice(value: string | number): string {
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user)
-  const { data, isLoading, error } = useDashboardStats()
+
+  const { data: stats, isLoading: statsLoading, error: statsError } = useDashboardStats()
+  const { data: ticketEvo, isLoading: ticketLoading } = useTicketEvolution(30)
+  const { data: ordersStatus, isLoading: statusLoading } = useOrdersByStatus()
+  const { data: ordersDay, isLoading: dayLoading } = useOrdersByDay(7)
 
   const subtitle = user
     ? `Bienvenido, ${user.full_name.split(' ')[0]}. Métricas en tiempo real.`
     : 'Métricas en tiempo real.'
 
-  if (isLoading) {
+  if (statsLoading) {
     return (
       <div className="flex flex-col gap-stack-lg">
         <PageHeader title="Dashboard" subtitle="Cargando métricas…" />
@@ -39,7 +47,7 @@ export function DashboardPage() {
     )
   }
 
-  if (error || !data) {
+  if (statsError || !stats) {
     return (
       <div className="flex flex-col gap-stack-lg">
         <PageHeader
@@ -60,30 +68,24 @@ export function DashboardPage() {
       {/* ── Sección: Pedidos / Ventas de HOY ─────────────────────────────── */}
       <section className="flex flex-col gap-stack-md">
         <h2 className="text-label-caps text-on-surface-variant">Hoy</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-stack-md">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-stack-lg">
           <KpiCard
             icon={<Receipt size={13} aria-hidden="true" />}
             label="Pedidos hoy"
-            value={data.pedidos_hoy}
+            value={stats.pedidos_hoy}
             subLabel="Recibidos en el día"
           />
           <KpiCard
             icon={<DollarSign size={13} aria-hidden="true" />}
             label="Ganancia hoy"
-            value={formatPrice(data.ganancia_hoy)}
+            value={formatPrice(stats.ganancia_hoy)}
             subLabel="No cancelados"
-          />
-          <KpiCard
-            icon={<CircleDollarSign size={13} aria-hidden="true" />}
-            label="Ticket promedio"
-            value={formatPrice(data.ticket_promedio_hoy)}
-            subLabel="Hoy"
           />
           <KpiCard
             variant="warning"
             icon={<Clock size={13} aria-hidden="true" />}
             label="Pedidos pendientes"
-            value={data.pedidos_pendientes}
+            value={stats.pedidos_pendientes}
             subLabel="En curso (todos)"
           />
         </div>
@@ -92,46 +94,40 @@ export function DashboardPage() {
       {/* ── Sección: Volumen + Catálogo ──────────────────────────────────── */}
       <section className="flex flex-col gap-stack-md">
         <h2 className="text-label-caps text-on-surface-variant">Resumen</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-stack-md">
-          <KpiCard
-            icon={<CalendarRange size={13} aria-hidden="true" />}
-            label="Pedidos esta semana"
-            value={data.pedidos_semana}
-            subLabel="Últimos 7 días"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-stack-lg">
           <KpiCard
             icon={<Package size={13} aria-hidden="true" />}
             label="Productos activos"
-            value={data.productos_activos}
+            value={stats.productos_activos}
             subLabel="No eliminados"
-          />
-          <KpiCard
-            variant="warning"
-            icon={<AlertTriangle size={13} aria-hidden="true" />}
-            label="Productos bajo stock"
-            value={data.productos_bajo_stock}
-            subLabel="Stock propio < 10"
           />
           <KpiCard
             icon={<Refrigerator size={13} aria-hidden="true" />}
             label="Ingredientes activos"
-            value={data.ingredientes_activos}
+            value={stats.ingredientes_activos}
             subLabel="Disponibles en cocina"
           />
-        </div>
-      </section>
-
-      {/* ── Sección: Alertas de Stock ────────────────────────────────────── */}
-      <section className="flex flex-col gap-stack-md">
-        <h2 className="text-label-caps text-on-surface-variant">Alertas</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-stack-md">
           <KpiCard
             variant="warning"
             icon={<AlertTriangle size={13} aria-hidden="true" />}
             label="Ingredientes bajo stock"
-            value={data.ingredientes_bajo_stock}
-            subLabel="Stock < 10"
+            value={stats.ingredientes_bajo_stock}
+            subLabel="Stock propio < 10"
           />
+        </div>
+      </section>
+
+      {/* ── Sección: Gráficos ────────────────────────────────────────────── */}
+      <section className="flex flex-col gap-stack-md">
+        <h2 className="text-label-caps text-on-surface-variant">Analytics</h2>
+
+        {/* Fila 1: Ticket promedio (línea) — ocupa todo el ancho */}
+        <LineTicketChart data={ticketEvo ?? []} isLoading={ticketLoading} />
+
+        {/* Fila 2: Pedidos por estado + Pedidos por día */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-stack-md">
+          <PieOrdersStatus data={ordersStatus} isLoading={statusLoading} />
+          <BarOrdersWeek data={ordersDay ?? []} isLoading={dayLoading} />
         </div>
       </section>
     </div>
