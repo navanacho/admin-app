@@ -9,3 +9,23 @@ export interface DashboardStats {
   ingredientes_activos:    number
   ingredientes_bajo_stock: number
 }
+
+export interface TicketEvolutionItem {
+  date: string       // YYYY-MM-DD
+  avg_ticket: number
+}
+
+export interface OrdersByStatus {
+  pendiente:       number
+  confirmado:      number
+  en_preparacion:  number
+  en_camino:       number
+  entregado:       number
+  cancelado:       number
+}
+
+export interface OrdersByDayItem {
+  date:     string  // YYYY-MM-DD
+  day_name: string
+  count:    number
+}
