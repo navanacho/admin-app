@@ -19,7 +19,7 @@ export interface OrdersByStatus {
   pendiente:       number
   confirmado:      number
   en_preparacion:  number
-  en_camino:       number
+  listo:           number
   entregado:       number
   cancelado:       number
 }

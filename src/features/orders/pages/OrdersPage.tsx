@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Receipt, Clock, Truck } from 'lucide-react'
+import { Eye, Receipt, Clock, Package } from 'lucide-react'
 
 import { useOrders, useEstadosPedido } from '../hooks/useOrders'
 import { OrderStateBadge } from '../components/OrderStateBadge'
@@ -51,7 +51,7 @@ export function OrdersPage() {
   const total = data?.total ?? 0
 
   const pendingCount = orders.filter((o) => o.estado_codigo === 'PENDIENTE').length
-  const enRutaCount = orders.filter((o) => o.estado_codigo === 'EN_CAMINO').length
+  const listoCount = orders.filter((o) => o.estado_codigo === 'LISTO').length
 
   function handleSelectEstado(estadoId: number | null) {
     setSelectedEstadoId(estadoId)
@@ -99,10 +99,10 @@ export function OrdersPage() {
           subLabel="Requieren confirmación"
         />
         <KpiCard
-          icon={<Truck size={13} aria-hidden="true" />}
-          label="En camino en página"
-          value={enRutaCount}
-          subLabel="En reparto"
+          icon={<Package size={13} aria-hidden="true" />}
+          label="Listos en página"
+          value={listoCount}
+          subLabel="Para entregar"
         />
       </div>
 

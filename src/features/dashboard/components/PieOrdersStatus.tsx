@@ -11,7 +11,7 @@ const STATUS_COLORS: Record<string, string> = {
   pendiente:      '#e89b1c',  // amber — atención pendiente
   confirmado:     '#4a7a2e',  // verde — listo para cocinar
   en_preparacion: '#b4000f',  // rb-red — en acción
-  en_camino:      '#1565c0',  // azul — en ruta
+  listo:          '#1565c0',  // azul — listo
   entregado:      '#2d2d2d',  // gris oscuro — finalizado
   cancelado:      '#8d9db0',  // gris azulado — anulado
 }
@@ -20,7 +20,7 @@ const STATUS_LABELS: Record<string, string> = {
   pendiente:      'Pendiente',
   confirmado:     'Confirmado',
   en_preparacion: 'En preparación',
-  en_camino:      'En camino',
+  listo:          'Listo',
   entregado:      'Entregado',
   cancelado:      'Cancelado',
 }

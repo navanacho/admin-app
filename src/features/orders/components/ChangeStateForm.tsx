@@ -9,8 +9,8 @@ import { getStateLabel } from './OrderStateBadge'
 const TRANSITIONS: Record<EstadoPedidoCodigo, EstadoPedidoCodigo[]> = {
   PENDIENTE:  ['CONFIRMADO', 'CANCELADO'],
   CONFIRMADO: ['EN_PREP', 'CANCELADO'],
-  EN_PREP:    ['EN_CAMINO'],
-  EN_CAMINO:  ['ENTREGADO'],
+  EN_PREP:    ['LISTO'],
+  LISTO:      ['ENTREGADO'],
   ENTREGADO:  [],
   CANCELADO:  [],
 }
