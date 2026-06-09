@@ -2,18 +2,8 @@ import { useState } from 'react'
 import { ButtonGeneric } from '@/shared/components/ButtonGeneric'
 import { SelectField } from '@/shared/components/SelectField'
 import type { EstadoPedidoCodigo, CambioEstadoDto } from '../types'
+import { TRANSITIONS } from '../lib/transitions'
 import { getStateLabel } from './OrderStateBadge'
-
-// Máquina de estados — espejo del backend (service.py TRANSICIONES_VALIDAS).
-// Si el backend cambia, hay que actualizar esto.
-const TRANSITIONS: Record<EstadoPedidoCodigo, EstadoPedidoCodigo[]> = {
-  PENDIENTE:  ['CONFIRMADO', 'CANCELADO'],
-  CONFIRMADO: ['EN_PREP', 'CANCELADO'],
-  EN_PREP:    ['EN_CAMINO'],
-  EN_CAMINO:  ['ENTREGADO'],
-  ENTREGADO:  [],
-  CANCELADO:  [],
-}
 
 interface ChangeStateFormProps {
   currentState: EstadoPedidoCodigo

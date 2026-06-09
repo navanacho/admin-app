@@ -8,6 +8,7 @@ import {
 } from '../hooks/useOrders'
 import { OrderStateBadge } from '../components/OrderStateBadge'
 import { ChangeStateForm } from '../components/ChangeStateForm'
+import { OrderItemsTable } from '../components/OrderItemsTable'
 
 import { PageHeader } from '@/shared/components/PageHeader'
 import { ButtonGeneric } from '@/shared/components/ButtonGeneric'
@@ -183,53 +184,7 @@ export function OrderDetailPage() {
             <header className="px-6 py-4 border-b border-outline-variant">
               <h2 className="text-headline-md text-on-surface">Productos</h2>
             </header>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b border-outline-variant">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-label-caps text-on-surface-variant">
-                      PRODUCTO
-                    </th>
-                    <th className="px-6 py-3 text-right text-label-caps text-on-surface-variant">
-                      P. UNIT.
-                    </th>
-                    <th className="px-6 py-3 text-right text-label-caps text-on-surface-variant">
-                      CANT.
-                    </th>
-                    <th className="px-6 py-3 text-right text-label-caps text-on-surface-variant">
-                      SUBTOTAL
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {order.detalles.map((d) => (
-                    <tr
-                      key={d.id}
-                      className="border-b border-outline-variant last:border-0"
-                    >
-                      <td className="px-6 py-4">
-                        <span className="font-sans font-semibold text-body-sm text-on-surface">
-                          {d.producto_nombre}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <span className="text-data-mono text-on-surface-variant">
-                          {formatPrice(d.producto_precio_unitario)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <span className="text-data-mono text-on-surface">{d.cantidad}</span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <span className="text-data-mono text-on-surface font-semibold">
-                          {formatPrice(d.subtotal)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <OrderItemsTable detalles={order.detalles} />
           </section>
 
           {/* Historial */}

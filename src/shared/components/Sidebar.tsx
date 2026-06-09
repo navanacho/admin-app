@@ -6,6 +6,8 @@ import {
   Users,
   LayoutDashboard,
   UserCircle,
+  ChefHat,
+  Banknote,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -23,6 +25,8 @@ interface NavItem {
 const allNavItems: NavItem[] = [
   { label: 'Dashboard',    icon: LayoutDashboard, to: '/dashboard',   capability: 'canViewDashboard'     },
   { label: 'Pedidos',      icon: Receipt,         to: '/orders',      capability: 'canViewOrders'        },
+  { label: 'Cocina',       icon: ChefHat,         to: '/cocina',      capability: 'canViewCocina'        },
+  { label: 'Caja',         icon: Banknote,        to: '/cajero',      capability: 'canViewCajero'        },
   { label: 'Productos',    icon: UtensilsCrossed, to: '/products',    capability: 'canManageProducts'    },
   { label: 'Ingredientes', icon: Refrigerator,    to: '/ingredients', capability: 'canManageIngredients' },
   { label: 'Categorías',   icon: LayoutGrid,      to: '/categories',  capability: 'canManageCategories'  },

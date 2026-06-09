@@ -1,6 +1,6 @@
 import type { User } from '@/features/auth/types'
 
-export type RoleCode = 'ADMIN' | 'STOCK' | 'PEDIDOS'
+export type RoleCode = 'ADMIN' | 'STOCK' | 'PEDIDOS' | 'COCINA'
 
 export interface Permissions {
   canManageProducts:    boolean
@@ -11,6 +11,8 @@ export interface Permissions {
   canChangeOrderState:  boolean
   canViewDashboard:     boolean
   canViewProfile:       boolean
+  canViewCocina:        boolean
+  canViewCajero:        boolean
 }
 
 export const NO_PERMISSIONS: Permissions = {
@@ -22,6 +24,8 @@ export const NO_PERMISSIONS: Permissions = {
   canChangeOrderState:  false,
   canViewDashboard:     false,
   canViewProfile:       false,
+  canViewCocina:        false,
+  canViewCajero:        false,
 }
 
 /** Devuelve true si el usuario tiene el rol indicado (ignora expiración por ahora). */
@@ -36,7 +40,12 @@ export function hasRole(user: User | null, code: RoleCode): boolean {
  */
 export function hasAdminAccess(user: User | null): boolean {
   if (!user) return false
-  return hasRole(user, 'ADMIN') || hasRole(user, 'STOCK') || hasRole(user, 'PEDIDOS')
+  return (
+    hasRole(user, 'ADMIN') ||
+    hasRole(user, 'STOCK') ||
+    hasRole(user, 'PEDIDOS') ||
+    hasRole(user, 'COCINA')
+  )
 }
 
 /** Mapea la matriz de capabilities desde los roles del usuario. */
@@ -46,6 +55,7 @@ export function computePermissions(user: User | null): Permissions {
   const isAdmin   = hasRole(user, 'ADMIN')
   const isStock   = hasRole(user, 'STOCK')
   const isPedidos = hasRole(user, 'PEDIDOS')
+  const isCocina  = hasRole(user, 'COCINA')
 
   return {
     canManageProducts:    isAdmin || isStock,
@@ -56,6 +66,8 @@ export function computePermissions(user: User | null): Permissions {
     canChangeOrderState:  isAdmin || isPedidos,
     canViewDashboard:     isAdmin,
     canViewProfile:       Boolean(user),
+    canViewCocina:        isAdmin || isCocina,
+    canViewCajero:        isAdmin || isPedidos,
   }
 }
 
@@ -65,6 +77,7 @@ export function getHomeRouteFor(user: User | null): string {
   const perms = computePermissions(user)
   if (perms.canViewDashboard) return '/dashboard'
   if (perms.canViewOrders)    return '/orders'
+  if (perms.canViewCocina)    return '/cocina'
   if (perms.canManageProducts) return '/products'
   if (perms.canManageIngredients) return '/ingredients'
   // Cualquier usuario logueado puede ver perfil — fallback razonable

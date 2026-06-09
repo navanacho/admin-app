@@ -5,3 +5,13 @@ export function getApiBase(): string {
   }
   return raw.replace(/\/$/, "");
 }
+
+/**
+ * Construye una URL WebSocket reutilizando el host/puerto/prefijo del API REST.
+ * Convierte el esquema http(s) → ws(s) y le concatena `path` (ej: "/pedidos/ws").
+ */
+export function getWsUrl(path: string): string {
+  const base = getApiBase().replace(/^http/, "ws");
+  const suffix = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${suffix}`;
+}

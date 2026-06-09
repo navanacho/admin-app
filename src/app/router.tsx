@@ -10,6 +10,8 @@ import { CategoriesPage } from '@/features/categories'
 import { IngredientsPage } from '@/features/ingredients'
 import { ProductsPage }    from '@/features/products'
 import { OrdersPage, OrderDetailPage } from '@/features/orders'
+import { CocinaBoardPage } from '@/features/cocina'
+import { CajeroBoardPage } from '@/features/cajero'
 import { UsersPage, UserDetailPage } from '@/features/users'
 import { ProtectedRoute }  from './ProtectedRoute'
 import { HomeRedirect }    from './HomeRedirect'
@@ -51,6 +53,18 @@ export const router = createBrowserRouter([
               { path: '/orders',     element: <OrdersPage /> },
               { path: '/orders/:id', element: <OrderDetailPage /> },
             ],
+          },
+
+          // Cocina — ADMIN y COCINA
+          {
+            element: <RequirePermission capability="canViewCocina" />,
+            children: [{ path: '/cocina', element: <CocinaBoardPage /> }],
+          },
+
+          // Caja — ADMIN y PEDIDOS
+          {
+            element: <RequirePermission capability="canViewCajero" />,
+            children: [{ path: '/cajero', element: <CajeroBoardPage /> }],
           },
 
           // Productos — ADMIN y STOCK

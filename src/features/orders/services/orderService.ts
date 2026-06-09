@@ -24,6 +24,18 @@ export async function getOrdersAdmin(
   return data
 }
 
+/**
+ * Lista inicial del tablero según la visibilidad del rol del usuario
+ * (ROLE_VISIBILITY en el backend). Misma fuente de verdad que el ruteo del WS.
+ * Los estados terminales (ENTREGADO/CANCELADO) vienen acotados a las últimas 24h.
+ */
+export async function getColaPedidos(offset = 0, limit = 100): Promise<PedidoList> {
+  const { data } = await apiClient.get<PedidoList>('/pedidos/cola', {
+    params: { offset, limit },
+  })
+  return data
+}
+
 export async function getEstadosPedido(): Promise<EstadoPedido[]> {
   const { data } = await apiClient.get<EstadoPedido[]>('/pedidos/estados')
   return data

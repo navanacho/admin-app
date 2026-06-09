@@ -51,7 +51,7 @@ export function OrdersPage() {
   const total = data?.total ?? 0
 
   const pendingCount = orders.filter((o) => o.estado_codigo === 'PENDIENTE').length
-  const enRutaCount = orders.filter((o) => o.estado_codigo === 'EN_CAMINO').length
+  const listoCount = orders.filter((o) => o.estado_codigo === 'LISTO').length
 
   function handleSelectEstado(estadoId: number | null) {
     setSelectedEstadoId(estadoId)
@@ -100,9 +100,9 @@ export function OrdersPage() {
         />
         <KpiCard
           icon={<Truck size={13} aria-hidden="true" />}
-          label="En camino en página"
-          value={enRutaCount}
-          subLabel="En reparto"
+          label="Listos en página"
+          value={listoCount}
+          subLabel="Listos para entregar"
         />
       </div>
 
