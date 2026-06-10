@@ -6,7 +6,7 @@ export const apiClient = axios.create({
   withCredentials: true, // Incluye la cookie HttpOnly en cada request
   timeout: 10_000,
   headers: {
-    'Content-Type': 'application/json',
+    // 'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 })

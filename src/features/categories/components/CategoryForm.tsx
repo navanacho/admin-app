@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { InputField } from '@/shared/components/InputField'
 import { SelectField, type SelectOption } from '@/shared/components/SelectField'
 import { ButtonGeneric } from '@/shared/components/ButtonGeneric'
+import { ImagePicker } from '@/shared/components/ImagePicker'
 import type { Category, CreateCategoryDto } from '../types'
 
 interface CategoryFormProps {
@@ -108,11 +109,10 @@ export function CategoryForm({
         required
       />
 
-      <InputField
-        label="URL de imagen"
-        value={imageUrl}
-        onChange={setImageUrl}
-        placeholder="https://… (opcional)"
+      <ImagePicker
+        label="Imagen"
+        value={imageUrl || null}
+        onChange={(url) => setImageUrl(url ?? '')}
       />
 
       <div className="flex justify-end gap-stack-md mt-stack-sm">

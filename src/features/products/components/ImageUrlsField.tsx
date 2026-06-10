@@ -1,6 +1,8 @@
-import { ButtonGeneric } from "@/shared/components/ButtonGeneric";
-import { InputField } from "@/shared/components/InputField";
-import { Plus, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { Loader2, Plus, X } from "lucide-react";
+import { useUploadImages } from "@/shared/hooks/useImageUpload";
+import { toast } from "@/shared/lib/toast";
+import { ALLOWED_IMAGE_TYPES, validateImageFile } from "@/shared/services/imageService";
 
 interface ImageUrlsFieldProps {
   label: string;
@@ -9,75 +11,109 @@ interface ImageUrlsFieldProps {
 }
 
 /**
- * Editor para una lista dinámica de URLs de imágenes.
- * Permite agregar, editar y eliminar URLs individualmente.
+ * Selector de imágenes del producto: permite elegir uno o más archivos del
+ * dispositivo, los sube a Cloudinary vía /images/upload y agrega las URLs
+ * resultantes a la lista. Cada imagen se puede quitar individualmente.
  */
 export function ImageUrlsField({
   label,
   values,
   onChange,
 }: ImageUrlsFieldProps) {
-  function updateAt(index: number, url: string) {
-    const next = [...values];
-    next[index] = url;
-    onChange(next);
-  }
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [pendingPreviews, setPendingPreviews] = useState<string[]>([]);
+  const { mutate: upload, isPending } = useUploadImages();
 
   function removeAt(index: number) {
     onChange(values.filter((_, i) => i !== index));
   }
 
-  function addEmpty() {
-    onChange([...values, ""]);
-  }
+  function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (files.length === 0) return;
 
-  const inputClass =
-    "flex-1 bg-rb-charcoal border border-white/10 rounded-sm px-3 py-2 text-body-sm text-rb-bone placeholder:text-rb-bone/30 focus:outline-none focus:border-primary transition-colors";
+    const validFiles: File[] = [];
+    for (const file of files) {
+      const error = validateImageFile(file);
+      if (error) {
+        toast.error("No se pudo subir la imagen", `${file.name}: ${error}`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+    if (validFiles.length === 0) return;
+
+    const previews = validFiles.map((file) => URL.createObjectURL(file));
+    setPendingPreviews((prev) => [...prev, ...previews]);
+
+    upload(validFiles, {
+      onSuccess: (images) => onChange([...values, ...images.map((img) => img.url)]),
+      onSettled: () => {
+        previews.forEach((p) => URL.revokeObjectURL(p));
+        setPendingPreviews((prev) => prev.filter((p) => !previews.includes(p)));
+      },
+    });
+  }
 
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-label-caps text-rb-bone/60">{label}</label>
 
-      <div className="flex flex-col gap-2">
-        {values.length === 0 && (
-          <p className="text-data-mono text-rb-bone/40 text-[11px]">
-            Sin imágenes — agregá una URL.
-          </p>
-        )}
-
+      <div className="flex flex-wrap gap-2">
         {values.map((url, idx) => (
-          <div key={idx} className="flex gap-2">
-            <InputField
-              placeholder="https://..."
-              label=""
-              onChange={(e) => updateAt(idx, e)}
-              value={url}
-            />
-            <ButtonGeneric
-              type="Secondary"
-              info={<X size={15} />}
+          <div
+            key={url + idx}
+            className="relative w-24 h-24 rounded-sm overflow-hidden border border-white/10 bg-rb-charcoal"
+          >
+            <img src={url} alt="" className="w-full h-full object-cover" />
+            <button
+              type="button"
               onClick={() => removeAt(idx)}
-            />
+              className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-rb-bone hover:bg-black/80 transition-colors"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        ))}
+
+        {pendingPreviews.map((src) => (
+          <div
+            key={src}
+            className="relative w-24 h-24 rounded-sm overflow-hidden border border-white/10 bg-rb-charcoal"
+          >
+            <img src={src} alt="" className="w-full h-full object-cover opacity-50" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+              <Loader2 size={20} className="animate-spin text-rb-bone" />
+            </div>
           </div>
         ))}
 
         <button
           type="button"
-          onClick={addEmpty}
-          className="self-start flex items-center gap-1.5 text-label-caps text-primary hover:text-rb-red-hover transition-colors mt-1"
-        ></button>
-        <ButtonGeneric
-          type="Primary"
-          info={
-            <>
-              <Plus size={14} />
-              Agregar URL
-            </>
-          }
-          onClick={addEmpty}
-          extraClass="flex w-fit"
+          onClick={() => inputRef.current?.click()}
+          disabled={isPending}
+          className="w-24 h-24 rounded-sm border border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-rb-bone/40 hover:text-primary hover:border-primary transition-colors disabled:opacity-40"
+        >
+          <Plus size={20} />
+          <span className="text-[10px]">Agregar</span>
+        </button>
+
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          accept={ALLOWED_IMAGE_TYPES.join(",")}
+          className="hidden"
+          onChange={handleFilesChange}
         />
       </div>
+
+      {values.length === 0 && pendingPreviews.length === 0 && (
+        <p className="text-data-mono text-rb-bone/40 text-[11px]">
+          Sin imágenes — agregá una desde tu dispositivo.
+        </p>
+      )}
     </div>
   );
 }

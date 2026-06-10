@@ -1,3 +1,9 @@
+# comando para instalar el entorno
+pnpm install
+
+# comando para iniciarlo 
+pnpm run dev
+
 # Integrantes
 Agustin Recabarren 
 Emanuel Crespo 
