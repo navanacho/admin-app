@@ -6,6 +6,7 @@ import {
   useOrderHistorial,
   useChangeOrderState,
 } from '../hooks/useOrders'
+import { useOrderWebSocket } from '../hooks/useOrderWebSocket'
 import { OrderStateBadge } from '../components/OrderStateBadge'
 import { ChangeStateForm } from '../components/ChangeStateForm'
 
@@ -39,6 +40,8 @@ export function OrderDetailPage() {
   const { id: idParam } = useParams<{ id: string }>()
   const id = Number(idParam)
   const isValidId = !Number.isNaN(id) && id > 0
+
+  useOrderWebSocket(isValidId ? [id] : undefined)
 
   const { data: order, isLoading, error } = useOrderById(isValidId ? id : null)
   const { data: historial, isLoading: loadingHist } = useOrderHistorial(

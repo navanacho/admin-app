@@ -7,6 +7,13 @@ export default defineConfig({
   server: {
     port: 5174,
     strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
   },
   plugins: [react(), tailwindcss()],
   resolve: {

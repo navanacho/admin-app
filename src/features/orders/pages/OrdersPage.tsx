@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Eye, Receipt, Clock, Package } from 'lucide-react'
 
 import { useOrders, useEstadosPedido } from '../hooks/useOrders'
+import { useOrderWebSocket } from '../hooks/useOrderWebSocket'
 import { OrderStateBadge } from '../components/OrderStateBadge'
 import { OrderStatusFilter } from '../components/OrderStatusFilter'
 
@@ -48,6 +49,8 @@ export function OrdersPage() {
   )
 
   const orders = data?.data ?? []
+
+  useOrderWebSocket(orders?.map((o) => o.id))
   const total = data?.total ?? 0
 
   const pendingCount = orders.filter((o) => o.estado_codigo === 'PENDIENTE').length
