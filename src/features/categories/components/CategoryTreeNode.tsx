@@ -63,6 +63,23 @@ export function CategoryTreeNode({
           {formatId(node.id)}
         </span>
 
+        {/* Imagen thumbnail */}
+        {node.image_url ? (
+          <div className="w-10 h-10 rounded-sm overflow-hidden shrink-0 bg-surface-container-high">
+            <img
+              src={node.image_url}
+              alt={node.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-10 h-10 rounded-sm shrink-0 bg-surface-container-high flex items-center justify-center">
+            <span className="text-xs font-display text-on-surface-variant/20">
+              {node.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
+
         {/* Nombre + descripción */}
         <div className="flex-1 min-w-0">
           <div className="font-sans font-semibold text-body-sm text-on-surface">
