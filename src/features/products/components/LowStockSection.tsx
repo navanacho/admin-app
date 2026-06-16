@@ -22,7 +22,7 @@ export function LowStockSection() {
       <div className="flex items-center gap-2 mb-3">
         <AlertTriangle size={16} className="text-warning" />
         <h3 className="text-label-caps text-warning">
-          Productos con Stock Propio Bajo — menos de {data.threshold} unidades
+          Productos con Stock Bajo — menos de {data.threshold} unidades
         </h3>
         <span className="text-data-mono text-warning ml-auto">
           {data.items.length} producto{data.items.length === 1 ? '' : 's'}
@@ -30,19 +30,28 @@ export function LowStockSection() {
       </div>
 
       <ul className="flex flex-col gap-1">
-        {data.items.map((p) => (
-          <li
-            key={p.id}
-            className="flex items-center justify-between px-3 py-2 bg-rb-paper/40 rounded-sm"
-          >
-            <span className="font-sans font-semibold text-body-sm text-on-surface">
-              {p.name}
-            </span>
-            <span className="text-data-mono text-warning">
-              {p.stock_quantity} unid.
-            </span>
-          </li>
-        ))}
+        {data.items.map((p) => {
+          const hasRecipe = p.ingredients.length > 0
+          const stock = hasRecipe ? p.available_stock : p.stock_quantity
+          return (
+            <li
+              key={p.id}
+              className="flex items-center justify-between px-3 py-2 bg-rb-paper/40 rounded-sm"
+            >
+              <span className="font-sans font-semibold text-body-sm text-on-surface">
+                {p.name}
+                {hasRecipe && (
+                  <span className="text-data-mono text-on-surface-variant ml-2 text-[11px]">
+                    (receta)
+                  </span>
+                )}
+              </span>
+              <span className="text-data-mono text-warning">
+                {stock} unid.
+              </span>
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

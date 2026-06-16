@@ -252,9 +252,10 @@ export function ProductsPage() {
         {sortedProducts.map((product) => {
           const isDeleted = product.deleted_at != null;
           const primaryCat = product.categories.find((c) => c.is_primary);
-          // Productos con receta: el stock vive en los ingredientes, no en el producto.
+          // Productos con receta: el stock se calcula desde los ingredientes.
           const hasRecipe  = product.ingredients.length > 0;
-          const isLowStock = !hasRecipe && product.stock_quantity < 10;
+          const currentStock = hasRecipe ? product.available_stock : product.stock_quantity;
+          const isLowStock = currentStock < 10;
 
           return (
             <tr
@@ -283,20 +284,16 @@ export function ProductsPage() {
                 </span>
               </td>
               <td className="px-6 py-4 text-right">
-                {hasRecipe ? (
-                  <span
-                    className="text-data-mono text-on-surface-variant"
-                    title="El stock se calcula a partir de los ingredientes"
-                  >
-                    —
-                  </span>
-                ) : (
-                  <span
-                    className={`text-data-mono ${isLowStock ? "text-warning font-bold" : "text-on-surface"}`}
-                  >
-                    {product.stock_quantity}
-                  </span>
-                )}
+                <span
+                  className={`text-data-mono ${isLowStock ? "text-warning font-bold" : hasRecipe ? "text-on-surface" : "text-on-surface"}`}
+                  title={
+                    hasRecipe
+                      ? `Stock fabricable desde ingredientes (mínimo: ${product.available_stock})`
+                      : undefined
+                  }
+                >
+                  {currentStock}
+                </span>
               </td>
               <td className="px-6 py-4">
                 <span className="text-body-sm text-on-surface-variant">

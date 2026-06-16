@@ -147,9 +147,11 @@ export function ProductForm({
       name:           name.trim(),
       description:    description.trim() === '' ? null : description.trim(),
       base_price:     basePrice,
-      // XOR: standalone usa su stock; recipe va siempre con 0 porque el back
-      // descuenta de ingredientes y stock_quantity se vuelve dato muerto.
-      stock_quantity: isStandalone ? stockQuantity : 0,
+      // Solo se envía stock_quantity para standalone.
+      // Para productos con receta NO se envía, así el backend (con exclude_unset=True)
+      // no sobrescribe el stock_quantity almacenado y en su lugar se usa available_stock
+      // que se calcula en vivo desde los ingredientes.
+      ...(isStandalone ? { stock_quantity: stockQuantity } : {}),
       prep_time_min:  prepTime,
       available,
       // Filtramos URLs vacías

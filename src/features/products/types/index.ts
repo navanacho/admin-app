@@ -21,6 +21,9 @@ export interface Product {
   name:           string
   description:    string | null
   stock_quantity: number
+  /** Stock fabricable en vivo. Para productos con receta = MIN(ingrediente.stock / cantidad).
+   *  Para standalone = stock_quantity. */
+  available_stock: number
   /** Decimal serializado como string por Pydantic/JSON */
   base_price:     string
   image_urls:     string[]
@@ -55,7 +58,8 @@ export interface ProductIngredientInput {
 export interface CreateProductDto {
   name:           string
   description:    string | null
-  stock_quantity: number
+  /** Para standalone se envía; para con-receta no se envía (el backend lo ignora). */
+  stock_quantity?: number
   /** Enviado como number; el backend lo convierte a Decimal */
   base_price:     number
   image_urls:     string[]
