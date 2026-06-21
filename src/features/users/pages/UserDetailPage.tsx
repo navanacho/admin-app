@@ -182,15 +182,15 @@ export function UserDetailPage() {
             <div className="p-6 grid grid-cols-2 gap-stack-md">
               <div>
                 <p className="text-label-caps text-on-surface-variant">Nombre completo</p>
-                <p className="text-body-sm text-rb-bone mt-1">{user.full_name}</p>
+                <p className="text-body-sm text-primary mt-1">{user.full_name}</p>
               </div>
               <div>
                 <p className="text-label-caps text-on-surface-variant">Username</p>
-                <p className="text-data-mono text-rb-bone mt-1">@{user.username}</p>
+                <p className="text-data-mono text-primary mt-1">@{user.username}</p>
               </div>
               <div className="col-span-2">
                 <p className="text-label-caps text-on-surface-variant">Email</p>
-                <p className="text-data-mono text-rb-bone mt-1">{user.email}</p>
+                <p className="text-data-mono text-primary mt-1">{user.email}</p>
               </div>
             </div>
           </section>

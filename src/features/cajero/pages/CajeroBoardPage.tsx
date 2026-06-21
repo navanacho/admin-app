@@ -54,7 +54,7 @@ export function CajeroBoardPage() {
         <div className="w-72 shrink-0 flex">
           <KanbanColumn
             title="En cocina"
-            accentClass="text-rb-bone"
+            accentClass="text-primary"
             count={enCocina.length}
             emptyHint="Nada en cocina"
           >

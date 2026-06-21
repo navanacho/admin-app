@@ -47,7 +47,7 @@ export function SelectField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-label-caps text-rb-bone/60">
+      <label className="text-label-caps text-primary">
         {label}
         {required && <span className="text-danger ml-0.5">*</span>}
       </label>

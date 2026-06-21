@@ -33,6 +33,7 @@ export function useCreateIngredient() {
     mutationFn: (dto: CreateIngredientDto) => createIngredient(dto),
     onSuccess: (ingredient) => {
       qc.invalidateQueries({ queryKey: [QUERY_KEY] });
+      qc.invalidateQueries({ queryKey: ['products'] });
       toast.success("Ingrediente creado", ingredient.name);
     },
     onError: (err) =>
@@ -48,6 +49,7 @@ export function useUpdateIngredient() {
     onSuccess: (ingredient, { id }) => {
       qc.invalidateQueries({ queryKey: [QUERY_KEY] });
       qc.invalidateQueries({ queryKey: [QUERY_KEY, id] });
+      qc.invalidateQueries({ queryKey: ['products'] });
       toast.success("Ingrediente actualizado", ingredient.name);
     },
     onError: (err) =>
@@ -64,6 +66,7 @@ export function useDeleteIngredient() {
     mutationFn: (id: number) => deleteIngredient(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [QUERY_KEY] });
+      qc.invalidateQueries({ queryKey: ['products'] });
       toast.success("Ingrediente eliminado");
     },
     onError: (err) =>
@@ -99,6 +102,7 @@ export function useActivateIngredient() {
     mutationFn: (id: number) => activateIngredient(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [QUERY_KEY] });
+      qc.invalidateQueries({ queryKey: ['products'] });
       toast.success("Ingrediente activado");
     },
     onError: (err) =>

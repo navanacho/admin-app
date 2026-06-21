@@ -12,6 +12,7 @@ export interface ProductIngredientLink {
   is_removable: boolean
   quantity:     number
   is_allergen:  boolean
+  has_stock:    boolean
 }
 
 // ─── Entidad principal ─────────────────────────────────────────────────────

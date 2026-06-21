@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Plus, Pencil, PowerOff, Power, Package, Trash2 } from "lucide-react";
-
 import {
-  useProducts,
-  useCreateProduct,
-  useUpdateProduct,
-  useDeleteProduct,
-  useSetProductAvailability,
-} from "../hooks/useProducts";
+  Plus,
+  Pencil,
+  PowerOff,
+  Power,
+  Package,
+  Trash2,
+  PackageX,
+} from "lucide-react";
+
+import { useProducts } from "../hooks/useProducts";
 import { ProductForm } from "../components/ProductForm";
 import { LowStockSection } from "../components/LowStockSection";
 import { ProductFilters } from "../components/ProductFilters";
@@ -42,7 +44,13 @@ function formatPrice(value: string | number): string {
   const n = typeof value === "string" ? parseFloat(value) : value;
   return `$${n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
-
+const {
+  useProductsQuery,
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
+  useSetProductAvailability,
+} = useProducts();
 export function ProductsPage() {
   const [offset, setOffset] = useState(0);
   const [showDeleted, setShowDeleted] = useState(false);
@@ -53,7 +61,12 @@ export function ProductsPage() {
     setOffset(0);
   }
 
-  const { data, isLoading, error } = useProducts(offset, LIMIT, showDeleted, filters);
+  const { data, isLoading, error } = useProductsQuery(
+    offset,
+    LIMIT,
+    showDeleted,
+    filters,
+  );
   const { mutate: createProduct, isPending: isCreating } = useCreateProduct();
   const { mutate: updateProduct, isPending: isUpdating } = useUpdateProduct();
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
@@ -72,7 +85,12 @@ export function ProductsPage() {
   const total = data?.total ?? 0;
 
   // Sort client-side por nombre (sobre la página actual)
-  const { sorted: sortedProducts, sortKey, direction, toggle } = useSortable<Product>(products);
+  const {
+    sorted: sortedProducts,
+    sortKey,
+    direction,
+    toggle,
+  } = useSortable<Product>(products);
 
   const liveCount = products.filter((p) => p.deleted_at == null).length;
   const availableCount = products.filter(
@@ -189,7 +207,7 @@ export function ProductsPage() {
       </div>
 
       {/* Alerta de bajo stock — solo si hay alguno */}
-      <LowStockSection />
+      <LowStockSection onEdit={openEdit} />
 
       <ProductFilters
         categories={catsData?.data ?? []}
@@ -198,8 +216,8 @@ export function ProductsPage() {
         onChange={applyFilters}
         includeDeleted={showDeleted}
         onIncludeDeletedChange={(v) => {
-          setShowDeleted(v)
-          setOffset(0)
+          setShowDeleted(v);
+          setOffset(0);
         }}
       />
 
@@ -253,9 +271,11 @@ export function ProductsPage() {
           const isDeleted = product.deleted_at != null;
           const primaryCat = product.categories.find((c) => c.is_primary);
           // Productos con receta: el stock se calcula desde los ingredientes.
-          const hasRecipe  = product.ingredients.length > 0;
-          const currentStock = hasRecipe ? product.available_stock : product.stock_quantity;
-          const isLowStock = currentStock < 10;
+          const hasRecipe = product.ingredients.length > 0;
+          const currentStock = hasRecipe
+            ? product.available_stock
+            : product.stock_quantity;
+          const isLowStock = currentStock <= 0;
 
           return (
             <tr
@@ -284,16 +304,43 @@ export function ProductsPage() {
                 </span>
               </td>
               <td className="px-6 py-4 text-right">
-                <span
-                  className={`text-data-mono ${isLowStock ? "text-warning font-bold" : hasRecipe ? "text-on-surface" : "text-on-surface"}`}
-                  title={
-                    hasRecipe
-                      ? `Stock fabricable desde ingredientes (mínimo: ${product.available_stock})`
-                      : undefined
-                  }
-                >
-                  {currentStock}
-                </span>
+                {(() => {
+                  const missingIngredients = hasRecipe
+                    ? product.ingredients.filter((i) => !i.has_stock)
+                    : [];
+                  const isOutOfStock = isLowStock && hasRecipe;
+                  return (
+                    <span
+                      className="inline-flex items-center justify-end gap-1"
+                      title={
+                        isOutOfStock && missingIngredients.length > 0
+                          ? `Sin stock por: ${missingIngredients.map((i) => i.name).join(", ")}`
+                          : hasRecipe
+                            ? `Stock fabricable desde ingredientes (mínimo: ${product.available_stock})`
+                            : undefined
+                      }
+                    >
+                      {isOutOfStock && missingIngredients.length > 0 && (
+                        <PackageX
+                          size={13}
+                          className="text-danger shrink-0"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span
+                        className={`text-data-mono ${
+                          isOutOfStock
+                            ? "text-danger font-bold"
+                            : isLowStock
+                              ? "text-warning font-bold"
+                              : "text-on-surface"
+                        }`}
+                      >
+                        {currentStock}
+                      </span>
+                    </span>
+                  );
+                })()}
               </td>
               <td className="px-6 py-4">
                 <span className="text-body-sm text-on-surface-variant">
@@ -383,11 +430,11 @@ export function ProductsPage() {
           isPending={isCreating}
         />
       </Modal>
-      
+
       {/* Modal — Editar */}
       <Modal dialogRef={editModalRef} title="Editar Producto" size="lg">
         <ProductForm
-          key={`edit-${editing?.id ?? 'none'}-${editNonce}`}
+          key={`edit-${editing?.id ?? "none"}-${editNonce}`}
           initialValues={
             editing
               ? {

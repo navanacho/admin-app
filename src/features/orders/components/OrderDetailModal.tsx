@@ -51,68 +51,98 @@ export function OrderDetailModal({ dialogRef, orderId, variant }: OrderDetailMod
         <p className="text-body-sm text-on-surface-variant">Cargando pedido...</p>
       ) : (
         <div className="flex flex-col gap-stack-md">
-          <div className="flex items-center gap-stack-sm">
-            <OrderStateBadge codigo={order.estado_codigo} />
-          </div>
-
-          {isFull && (
-            <section className="grid grid-cols-2 gap-stack-md border border-outline-variant rounded-md p-4">
-              <div>
-                <p className="text-label-caps text-on-surface-variant">Dirección de entrega</p>
-                <p className="text-body-sm text-on-surface mt-1">
-                  {order.direccion_entrega_id != null
-                    ? `#DIR-${order.direccion_entrega_id}`
-                    : '—'}
-                </p>
-              </div>
-              <div>
-                <p className="text-label-caps text-on-surface-variant">Forma de pago</p>
-                <p className="text-body-sm text-on-surface mt-1">
-                  {order.forma_pago_id != null ? `#PAG-${order.forma_pago_id}` : '—'}
-                </p>
-              </div>
-              <div>
-                <p className="text-label-caps text-on-surface-variant">Total</p>
-                <p className="text-data-mono text-on-surface mt-1 font-semibold">
-                  {formatPrice(order.total)}
-                </p>
-              </div>
-              <div>
-                <p className="text-label-caps text-on-surface-variant">Subtotal · Envío</p>
-                <p className="text-data-mono text-on-surface mt-1">
-                  {formatPrice(order.subtotal)} · {formatPrice(order.costo_envio)}
-                </p>
-              </div>
-              {order.notas_cliente && (
-                <div className="col-span-2">
-                  <p className="text-label-caps text-on-surface-variant">Notas del cliente</p>
-                  <p className="text-body-sm text-on-surface mt-1 italic">
-                    "{order.notas_cliente}"
-                  </p>
+          {isFull ? (
+            <>
+              {/* Estado actual */}
+              <section className="bg-surface-container-lowest border border-outline-variant rounded-md overflow-hidden">
+                <header className="px-6 py-4 border-b border-outline-variant">
+                  <h2 className="text-headline-md text-on-surface">Estado actual</h2>
+                </header>
+                <div className="px-6 py-4">
+                  <OrderStateBadge codigo={order.estado_codigo} />
                 </div>
-              )}
-            </section>
-          )}
+              </section>
 
-          <section className="border border-outline-variant rounded-md overflow-hidden">
-            <header className="px-6 py-3 border-b border-outline-variant">
-              <h3 className="text-label-caps text-on-surface-variant">Productos</h3>
-            </header>
-            <OrderItemsTable detalles={order.detalles} showPrices={isFull} />
-          </section>
+              {/* Información */}
+              <section className="bg-surface-container-lowest border border-outline-variant rounded-md overflow-hidden">
+                <header className="px-6 py-4 border-b border-outline-variant">
+                  <h2 className="text-headline-md text-on-surface">Información</h2>
+                </header>
+                <div className="p-6 grid grid-cols-2 gap-stack-md">
+                  <div>
+                    <p className="text-label-caps text-on-surface-variant">Total</p>
+                    <p className="text-data-mono text-on-surface mt-1 font-semibold">
+                      {formatPrice(order.total)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-label-caps text-on-surface-variant">Subtotal · Envío</p>
+                    <p className="text-data-mono text-on-surface mt-1">
+                      {formatPrice(order.subtotal)} · {formatPrice(order.costo_envio)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-label-caps text-on-surface-variant">Dirección de entrega</p>
+                    <p className="text-body-sm text-on-surface mt-1">
+                      {order.direccion_entrega_id != null
+                        ? `#DIR-${order.direccion_entrega_id}`
+                        : '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-label-caps text-on-surface-variant">Forma de pago</p>
+                    <p className="text-body-sm text-on-surface mt-1">
+                      {order.forma_pago_id != null ? `#PAG-${order.forma_pago_id}` : '—'}
+                    </p>
+                  </div>
+                  {order.notas_cliente && (
+                    <div className="col-span-2">
+                      <p className="text-label-caps text-on-surface-variant">Notas del cliente</p>
+                      <p className="text-body-sm text-on-surface mt-1 italic">
+                        "{order.notas_cliente}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
 
-          {isFull && (
-            <div className="flex justify-end">
-              <ButtonGeneric
-                info={
-                  <>
-                    <User size={16} aria-hidden="true" /> Ir al cliente
-                  </>
-                }
-                type="Secondary"
-                onClick={() => navigate(`/users/${order.usuario_id}`)}
-              />
-            </div>
+              {/* Productos */}
+              <section className="bg-surface-container-lowest border border-outline-variant rounded-md overflow-hidden">
+                <header className="px-6 py-4 border-b border-outline-variant">
+                  <h2 className="text-headline-md text-on-surface">Productos</h2>
+                </header>
+                <OrderItemsTable detalles={order.detalles} showPrices />
+              </section>
+
+              <div className="flex justify-end">
+                <ButtonGeneric
+                  info={
+                    <>
+                      <User size={16} aria-hidden="true" /> Ir al cliente
+                    </>
+                  }
+                  type="Secondary"
+                  onClick={() => navigate(`/users/${order.usuario_id}`)}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <section className="bg-surface-container-lowest border border-outline-variant rounded-md overflow-hidden">
+                <header className="px-6 py-4 border-b border-outline-variant">
+                  <h2 className="text-headline-md text-on-surface">Estado actual</h2>
+                </header>
+                <div className="px-6 py-4">
+                  <OrderStateBadge codigo={order.estado_codigo} />
+                </div>
+              </section>
+              <section className="bg-surface-container-lowest border border-outline-variant rounded-md overflow-hidden">
+                <header className="px-6 py-4 border-b border-outline-variant">
+                  <h2 className="text-headline-md text-on-surface">Productos</h2>
+                </header>
+                <OrderItemsTable detalles={order.detalles} showPrices={false} showIngredients />
+              </section>
+            </>
           )}
         </div>
       )}

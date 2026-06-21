@@ -52,7 +52,7 @@ export function ChangeStateForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-stack-md">
       <p className="text-body-sm text-on-surface-variant">
         Estado actual:{' '}
-        <strong className="text-rb-bone">{getStateLabel(currentState)}</strong>
+        <strong className="text-primary">{getStateLabel(currentState)}</strong>
       </p>
 
       <SelectField
@@ -64,7 +64,7 @@ export function ChangeStateForm({
       />
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-label-caps text-rb-bone/60">
+        <label className="text-label-caps text-primary">
           Observaciones <span className="text-rb-bone/40">(opcional)</span>
         </label>
         <textarea

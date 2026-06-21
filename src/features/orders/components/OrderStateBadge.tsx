@@ -3,7 +3,7 @@ import type { EstadoPedidoCodigo } from '../types'
 const STATE_STYLES: Record<EstadoPedidoCodigo, string> = {
   PENDIENTE:  'bg-warning/15 text-warning',
   CONFIRMADO: 'bg-primary-container/20 text-primary',
-  EN_PREP:    'bg-rb-bone/15 text-rb-bone',
+  EN_PREP:    'bg-primary-container/20 text-primary',
   LISTO:      'bg-success/15 text-success',
   ENTREGADO:  'bg-success text-on-primary',
   CANCELADO:  'bg-danger/15 text-danger',

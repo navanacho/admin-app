@@ -1,18 +1,13 @@
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Pencil } from 'lucide-react'
 import { useLowStockIngredients } from '../hooks/useIngredients'
+import type { Ingredient } from '../types'
 
-const LOW_STOCK_THRESHOLD = 10
+interface Props {
+  onEdit?: (ingredient: Ingredient) => void
+}
 
-/**
- * Sección que muestra los ingredientes con stock bajo (debajo del threshold).
- * Se oculta si no hay ninguno. Espejada de products/LowStockSection.
- *
- * ⚠ Fuente de datos: cliente — filtra la primera página de ingredientes (limit=100).
- *    Cuando exista `/ingredientes/low-stock?threshold=N` en el backend, modificar
- *    `useLowStockIngredients` para llamarlo en lugar de filtrar.
- */
-export function IngredientLowStockSection() {
-  const { data, isLoading } = useLowStockIngredients(LOW_STOCK_THRESHOLD)
+export function IngredientLowStockSection({ onEdit }: Props) {
+  const { data, isLoading } = useLowStockIngredients()
 
   if (isLoading)              return null
   if (!data || data.items.length === 0) return null
@@ -31,16 +26,26 @@ export function IngredientLowStockSection() {
 
       <ul className="flex flex-col gap-1">
         {data.items.map((i) => (
-          <li
-            key={i.id}
-            className="flex items-center justify-between px-3 py-2 bg-rb-paper/40 rounded-sm"
-          >
-            <span className="font-sans font-semibold text-body-sm text-on-surface">
-              {i.name}
-            </span>
-            <span className="text-data-mono text-warning">
-              {i.stock_quantity} unid.
-            </span>
+          <li key={i.id}>
+            <button
+              type="button"
+              onClick={() => onEdit?.(i)}
+              className="group w-full flex items-center justify-between px-3 py-2 bg-rb-paper/40 rounded-sm text-left transition-colors hover:bg-rb-paper/70 cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <span className="font-sans font-semibold text-body-sm text-on-surface group-hover:text-primary transition-colors">
+                  {i.name}
+                </span>
+                <Pencil
+                  size={11}
+                  className="text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-hidden="true"
+                />
+              </span>
+              <span className="text-data-mono text-warning">
+                {i.stock_quantity} unid.
+              </span>
+            </button>
           </li>
         ))}
       </ul>

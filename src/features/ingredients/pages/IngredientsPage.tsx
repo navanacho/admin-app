@@ -158,7 +158,7 @@ export function IngredientsPage() {
         />
       </div>
 
-      <IngredientLowStockSection />
+      <IngredientLowStockSection onEdit={openEdit} />
 
       <div className="flex items-center justify-end">
         <div className="relative">
