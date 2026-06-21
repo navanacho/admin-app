@@ -22,7 +22,7 @@ function validatePassword(value: string): string | undefined {
 
 export function LoginPage() {
   // Todos los hooks antes de cualquier return condicional
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const status          = useAuthStore((s) => s.status)
   const loginStore      = useAuthStore((s) => s.login)
   const logoutStore     = useAuthStore((s) => s.logout)
   const currentUser     = useAuthStore((s) => s.user)
@@ -37,13 +37,13 @@ export function LoginPage() {
   // Limpieza de sesión persistida sin acceso (ej. CLIENT que loggeó antes
   // de este gate y quedó en localStorage). Cae al render normal del login.
   useEffect(() => {
-    if (isAuthenticated && !hasAdminAccess(currentUser)) {
+    if (status === 'authenticated' && !hasAdminAccess(currentUser)) {
       logoutStore()
     }
-  }, [isAuthenticated, currentUser, logoutStore])
+  }, [status, currentUser, logoutStore])
 
   // Si ya hay sesión activa Y con acceso, redirigir a la home según rol.
-  if (isAuthenticated && hasAdminAccess(currentUser)) {
+  if (status === 'authenticated' && hasAdminAccess(currentUser)) {
     return <Navigate to={getHomeRouteFor(currentUser)} replace />
   }
 
