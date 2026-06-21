@@ -1,13 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Plus, FolderTree, Search, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
 
-import {
-  useCategories,
-  useCreateCategory,
-  useUpdateCategory,
-  useDeleteCategory,
-  useActivateCategory,
-} from '../hooks/useCategories'
+import { useCategories } from '../hooks/useCategories'
 import { CategoryForm } from '../components/CategoryForm'
 import { CategoryTreeNode } from '../components/CategoryTreeNode'
 
@@ -72,11 +66,19 @@ function collectDescendants(rootId: number, all: Category[]): Set<number> {
 // ── Componente ───────────────────────────────────────────────────────────────
 
 export function CategoriesPage() {
+  const {
+    useCategoriesQuery,
+    useCreateCategory,
+    useUpdateCategory,
+    useDeleteCategory,
+    useActivateCategory,
+  } = useCategories()
+
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search, 300)
   const [nameSort, setNameSort] = useState<SortDirection>(null)
 
-  const { data, isLoading, error } = useCategories(0, 100, debouncedSearch || undefined)
+  const { data, isLoading, error } = useCategoriesQuery(0, 100, debouncedSearch || undefined)
   const { mutate: createCategory,     isPending: isCreating     } = useCreateCategory()
   const { mutate: updateCategory,     isPending: isUpdating     } = useUpdateCategory()
   const { mutate: deactivateCategory, isPending: isDeactivating } = useDeleteCategory()

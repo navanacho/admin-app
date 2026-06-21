@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, Receipt, Clock, Truck } from 'lucide-react'
 
-import { useOrders, useEstadosPedido } from '../hooks/useOrders'
+import { useOrders } from '../hooks/useOrders'
 import { OrderStateBadge } from '../components/OrderStateBadge'
 import { OrderStatusFilter } from '../components/OrderStatusFilter'
 
@@ -36,12 +36,13 @@ function formatDate(value: string): string {
 }
 
 export function OrdersPage() {
+  const { useOrdersQuery, useEstadosPedido } = useOrders()
   const navigate = useNavigate()
   const [offset, setOffset] = useState(0)
   const [selectedEstadoId, setSelectedEstadoId] = useState<number | null>(null)
 
   const { data: estados = [] } = useEstadosPedido()
-  const { data, isLoading, error } = useOrders(
+  const { data, isLoading, error } = useOrdersQuery(
     offset,
     LIMIT,
     selectedEstadoId ?? undefined,

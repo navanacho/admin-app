@@ -1,5 +1,5 @@
 import { AlertTriangle, Pencil } from 'lucide-react'
-import { useLowStockIngredients } from '../hooks/useIngredients'
+import { useIngredients } from '../hooks/useIngredients'
 import type { Ingredient } from '../types'
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
 }
 
 export function IngredientLowStockSection({ onEdit }: Props) {
+  const { useLowStockIngredients } = useIngredients()
   const { data, isLoading } = useLowStockIngredients()
 
   if (isLoading)              return null

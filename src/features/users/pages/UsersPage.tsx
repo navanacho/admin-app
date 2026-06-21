@@ -20,10 +20,11 @@ function currentPage(offset: number, limit: number): number {
 }
 
 export function UsersPage() {
+  const { useUsersQuery } = useUsers()
   const navigate = useNavigate()
   const [offset, setOffset] = useState(0)
 
-  const { data: users = [], isLoading } = useUsers()
+  const { data: users = [], isLoading } = useUsersQuery()
 
   const total = users.length
   const activeCount = users.filter((u) => !u.disabled).length

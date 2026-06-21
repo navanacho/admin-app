@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { MapPin, Star } from 'lucide-react'
-import { useAddressesByUsuario } from '../hooks/useAddresses'
+import { useAddresses } from '../hooks/useAddresses'
 import type { Direccion } from '../types'
 
 const LIMIT = 5
@@ -16,6 +16,7 @@ function fullAddressLine(d: Direccion): string {
 }
 
 export function UserAddressesSection({ usuarioId }: UserAddressesSectionProps) {
+  const { useAddressesByUsuario } = useAddresses()
   const [offset, setOffset] = useState(0)
   const { data, isLoading } = useAddressesByUsuario(usuarioId, offset, LIMIT)
 

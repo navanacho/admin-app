@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, Pencil, PowerOff, Power, AlertTriangle, Search } from "lucide-react";
 
-import {
-  useIngredients,
-  useDeleteIngredient,
-  useActivateIngredient,
-  useCreateIngredient,
-  useUpdateIngredient,
-} from "../hooks/useIngredients";
+import { useIngredients } from "../hooks/useIngredients";
 import { AllergenBadge } from "../components/AllergenBadge";
 import { IngredientForm } from "../components/IngredientForm";
 import { IngredientLowStockSection } from "../components/IngredientLowStockSection";
@@ -34,6 +28,14 @@ function currentPage(offset: number, limit: number): number {
 }
 
 export function IngredientsPage() {
+  const {
+    useIngredientsQuery,
+    useDeleteIngredient,
+    useActivateIngredient,
+    useCreateIngredient,
+    useUpdateIngredient,
+  } = useIngredients();
+
   const [offset, setOffset] = useState(0);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -43,7 +45,7 @@ export function IngredientsPage() {
     setOffset(0);
   }, [debouncedSearch]);
 
-  const { data, isLoading, error } = useIngredients(
+  const { data, isLoading, error } = useIngredientsQuery(
     offset,
     LIMIT,
     debouncedSearch || undefined,

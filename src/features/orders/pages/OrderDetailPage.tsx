@@ -1,11 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Receipt } from 'lucide-react'
 
-import {
-  useOrderById,
-  useOrderHistorial,
-  useChangeOrderState,
-} from '../hooks/useOrders'
+import { useOrders } from '../hooks/useOrders'
 import { OrderStateBadge } from '../components/OrderStateBadge'
 import { ChangeStateForm } from '../components/ChangeStateForm'
 import { OrderItemsTable } from '../components/OrderItemsTable'
@@ -36,6 +32,12 @@ function formatDate(value: string): string {
 }
 
 export function OrderDetailPage() {
+  const {
+    useOrderById,
+    useOrderHistorial,
+    useChangeOrderState,
+  } = useOrders()
+
   const navigate = useNavigate()
   const { id: idParam } = useParams<{ id: string }>()
   const id = Number(idParam)

@@ -2,12 +2,13 @@ import { AlertTriangle, PackageX, Pencil } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useProducts } from '../hooks/useProducts'
 import type { Product } from '../types'
-const { useLowStockProducts} = useProducts();
+
 interface Props {
   onEdit?: (product: Product) => void
 }
 
 export function LowStockSection({ onEdit }: Props) {
+  const { useLowStockProducts } = useProducts()
   const { data, isLoading } = useLowStockProducts()
 
   if (isLoading)              return null

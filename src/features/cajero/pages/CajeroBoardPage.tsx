@@ -6,8 +6,7 @@ import {
   OrderCard,
   OrderDetailModal,
   DeliveredOrdersTable,
-  useOrdersBoard,
-  useChangeOrderState,
+  useOrders,
 } from '@/features/orders'
 import type { Pedido } from '@/features/orders'
 import { nextState } from '@/features/orders/lib/transitions'
@@ -19,6 +18,7 @@ const COLUMNS = [
 ] as const
 
 export function CajeroBoardPage() {
+  const { useOrdersBoard, useChangeOrderState } = useOrders()
   const { byState, isLoading } = useOrdersBoard()
   const { mutate: changeState, isPending } = useChangeOrderState()
 

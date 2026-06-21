@@ -1,7 +1,7 @@
 import { AlertTriangle } from 'lucide-react'
 import type { DetallePedido } from '../types'
 import { useProducts } from '@/features/products/hooks/useProducts'
-const { useProductById} = useProducts()
+
 function formatPrice(value: string): string {
   const n = parseFloat(value)
   return `$${n.toLocaleString('es-AR', {
@@ -11,6 +11,7 @@ function formatPrice(value: string): string {
 }
 
 function IngredientList({ productId }: { productId: number }) {
+  const { useProductById } = useProducts()
   const { data: product, isLoading } = useProductById(productId)
 
   if (isLoading) return (

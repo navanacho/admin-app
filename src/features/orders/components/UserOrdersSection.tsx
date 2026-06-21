@@ -34,10 +34,11 @@ interface UserOrdersSectionProps {
  * Filas clickeables que llevan al detalle del pedido.
  */
 export function UserOrdersSection({ usuarioId }: UserOrdersSectionProps) {
+  const { useOrdersQuery } = useOrders()
   const navigate = useNavigate()
   const [offset, setOffset] = useState(0)
 
-  const { data, isLoading } = useOrders(offset, LIMIT, undefined, usuarioId)
+  const { data, isLoading } = useOrdersQuery(offset, LIMIT, undefined, usuarioId)
 
   const orders = data?.data ?? []
   const total = data?.total ?? 0

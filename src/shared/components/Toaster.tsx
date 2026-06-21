@@ -1,15 +1,42 @@
+import { useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { useToastStore, type Toast } from '@/shared/store/toastStore'
 
 export function Toaster() {
   const toasts = useToastStore((s) => s.toasts)
   const dismiss = useToastStore((s) => s.dismiss)
+  const ref = useRef<HTMLDivElement>(null)
 
-  if (toasts.length === 0) return null
+  // Los modales usan <dialog>.showModal(), que coloca el dialog y su ::backdrop
+  // (con el blur) en el "top layer" del navegador — por encima de cualquier
+  // z-index del flujo normal. Para que los toasts queden por encima del blur,
+  // los promovemos también al top layer vía la Popover API, re-mostrándolos
+  // cada vez que cambia la lista para que entren por encima del modal abierto.
+  const count = toasts.length
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (count > 0) {
+      try {
+        el.hidePopover()
+      } catch {
+        /* aún no estaba mostrado */
+      }
+      el.showPopover()
+    } else {
+      try {
+        el.hidePopover()
+      } catch {
+        /* ya estaba oculto */
+      }
+    }
+  }, [count])
 
   return (
     <div
-      className="fixed bottom-margin-desktop right-margin-desktop z-50 flex flex-col gap-stack-sm pointer-events-none"
+      ref={ref}
+      popover="manual"
+      className="fixed inset-auto bottom-margin-desktop right-margin-desktop top-auto left-auto m-0 border-0 bg-transparent p-0 z-50 flex flex-col gap-stack-sm pointer-events-none"
       role="region"
       aria-label="Notificaciones"
     >

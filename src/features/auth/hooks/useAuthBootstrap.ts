@@ -9,7 +9,7 @@ export function useAuthBootstrap() {
 
   useEffect(() => {
     let active = true
-    localStorage.removeItem('auth-storage')
+    //localStorage.removeItem('auth-storage')
 
     getMeService()
       .then((user) => {

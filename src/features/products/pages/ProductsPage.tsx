@@ -44,14 +44,17 @@ function formatPrice(value: string | number): string {
   const n = typeof value === "string" ? parseFloat(value) : value;
   return `$${n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
-const {
-  useProductsQuery,
-  useCreateProduct,
-  useUpdateProduct,
-  useDeleteProduct,
-  useSetProductAvailability,
-} = useProducts();
 export function ProductsPage() {
+  const {
+    useProductsQuery,
+    useCreateProduct,
+    useUpdateProduct,
+    useDeleteProduct,
+    useSetProductAvailability,
+  } = useProducts();
+  const { useCategoriesQuery } = useCategories();
+  const { useIngredientsQuery } = useIngredients();
+
   const [offset, setOffset] = useState(0);
   const [showDeleted, setShowDeleted] = useState(false);
   const [filters, setFilters] = useState<ProductFiltersType>({});
@@ -74,8 +77,8 @@ export function ProductsPage() {
     useSetProductAvailability();
 
   // Categorías + ingredientes activos para los multi-selects
-  const { data: catsData } = useCategories(0, 100);
-  const { data: ingsData } = useIngredients(0, 100);
+  const { data: catsData } = useCategoriesQuery(0, 100);
+  const { data: ingsData } = useIngredientsQuery(0, 100);
   const availableCategories = (catsData?.data ?? []).filter((c) => c.is_active);
   const availableIngredients = (ingsData?.data ?? []).filter(
     (i) => i.is_active,

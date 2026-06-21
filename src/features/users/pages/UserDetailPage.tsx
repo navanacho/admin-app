@@ -9,13 +9,7 @@ import {
   UserCircle,
 } from 'lucide-react'
 
-import {
-  useUserById,
-  useActivateUser,
-  useDeactivateUser,
-  useAsignarRol,
-  useQuitarRol,
-} from '../hooks/useUsers'
+import { useUsers } from '../hooks/useUsers'
 import { RoleBadge } from '../components/RoleBadge'
 import { AssignRoleForm } from '../components/AssignRoleForm'
 import { UserOrdersSection } from '@/features/orders'
@@ -41,6 +35,14 @@ function formatDate(value: string): string {
 }
 
 export function UserDetailPage() {
+  const {
+    useUserById,
+    useActivateUser,
+    useDeactivateUser,
+    useAsignarRol,
+    useQuitarRol,
+  } = useUsers()
+
   const navigate = useNavigate()
   const { id: idParam } = useParams<{ id: string }>()
   const id = Number(idParam)

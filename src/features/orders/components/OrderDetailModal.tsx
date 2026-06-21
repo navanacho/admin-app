@@ -4,7 +4,7 @@ import { User } from 'lucide-react'
 
 import { Modal } from '@/shared/components/Modal'
 import { ButtonGeneric } from '@/shared/components/ButtonGeneric'
-import { useOrderById } from '../hooks/useOrders'
+import { useOrders } from '../hooks/useOrders'
 import { OrderItemsTable } from './OrderItemsTable'
 import { OrderStateBadge } from './OrderStateBadge'
 
@@ -37,6 +37,7 @@ interface OrderDetailModalProps {
  * replica la info del detalle full-page (OrderDetailPage).
  */
 export function OrderDetailModal({ dialogRef, orderId, variant }: OrderDetailModalProps) {
+  const { useOrderById } = useOrders()
   const navigate = useNavigate()
   const { data: order, isLoading } = useOrderById(orderId)
   const isFull = variant === 'full'

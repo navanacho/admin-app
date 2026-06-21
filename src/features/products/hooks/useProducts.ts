@@ -91,14 +91,14 @@ export const useProducts = () => {
         ),
     });
   }
-  function /**
+  /**
    * Devuelve los productos con stock por debajo del threshold.
    *
    * ⚠ TODO: Reemplazar por un endpoint dedicado `/products/low-stock?threshold=N`
    *         cuando el backend lo implemente. Por ahora trae los primeros 100 y
    *         filtra en cliente — válido para datasets chicos.
    */
-  useLowStockProducts() {
+  function useLowStockProducts() {
     return useQuery({
       queryKey: [QUERY_KEY, "low-stock"],
       queryFn: () => getProducts(0, 100),
@@ -121,7 +121,6 @@ export const useProducts = () => {
     });
   }
   return {
-    ...useProducts,
     useProductsQuery,
     useProductById,
     useCreateProduct,
